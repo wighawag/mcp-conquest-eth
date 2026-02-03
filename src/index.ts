@@ -17,7 +17,7 @@ function stringifyWithBigInt(obj: any, space?: number): string {
 }
 
 export function createServer(
-	params: {chain: Chain; privateKey?: `0x${string}`},
+	params: {chain: Chain; privateKey?: `0x${string}`; gameContract: `0x${string}`},
 	options?: {
 		ethereum?: boolean;
 		rpcURL?: string;
@@ -25,11 +25,12 @@ export function createServer(
 		serverInfo?: Implementation;
 	},
 ) {
+	const {gameContract, ...mcpEthereumParams} = params;
 	const {publicClient, walletClient} = getClients(params, options);
 
 	const name = `${pkg.name}-server`;
 	const server = options?.ethereum
-		? createMCPEthereumServer(params, {
+		? createMCPEthereumServer(mcpEthereumParams, {
 				...options,
 				serverInfo: {name, version: pkg.version, ...options?.serverInfo},
 			})

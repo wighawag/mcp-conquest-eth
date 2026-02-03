@@ -11,6 +11,7 @@ describe('MCP Server', () => {
 			{
 				chain,
 				privateKey: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+				gameContract: '0x1234567890abcdef1234567890abcdef12345678',
 			},
 			{
 				ethereum: true,
