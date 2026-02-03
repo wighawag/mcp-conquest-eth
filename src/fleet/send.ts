@@ -5,14 +5,7 @@ import type {PendingFleet} from '../types/fleet.js';
 import {computeToHash, computeFleetId, generateSecret} from '../util/hashing.js';
 import {calculateEstimatedArrivalTime, getCurrentTimestamp} from '../util/time.js';
 import type {FleetStorage} from '../storage/interface.js';
-
-export interface ContractConfig {
-	genesis: bigint;
-	resolveWindow: bigint;
-	timePerDistance: bigint;
-	exitDuration: bigint;
-	[key: string]: bigint;
-}
+import type {ContractConfig} from '../types.js';
 
 /**
  * Send a fleet to a destination planet

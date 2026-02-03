@@ -1,11 +1,12 @@
 import {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
 import type {PublicClient} from 'viem';
 import {Artifact_IOuterSpaceInformation} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceInformation.js';
+import type {ContractConfig} from '../types.js';
 
 export async function createSpaceInfo(
 	publicClient: PublicClient,
 	gameContract: `0x${string}`,
-): Promise<SpaceInfo> {
+): Promise<{spaceInfo: SpaceInfo; contractConfig: ContractConfig}> {
 	// Fetch config from contract
 	const config = await publicClient.readContract({
 		address: gameContract,
@@ -13,8 +14,16 @@ export async function createSpaceInfo(
 		functionName: 'getConfig',
 	});
 
+	const contractConfig: ContractConfig = {
+		genesis: BigInt(config.genesis),
+		resolveWindow: BigInt(config.resolveWindow),
+		timePerDistance: BigInt(config.timePerDistance),
+		exitDuration: BigInt(config.exitDuration),
+		acquireNumSpaceships: Number(config.acquireNumSpaceships),
+	};
+
 	// Create SpaceInfo instance with config
-	return new SpaceInfo({
+	const spaceInfo = new SpaceInfo({
 		genesis: config.genesis as `0x${string}`,
 		resolveWindow: Number(config.resolveWindow),
 		timePerDistance: Number(config.timePerDistance),
@@ -30,4 +39,6 @@ export async function createSpaceInfo(
 		bootstrapSessionEndTime: Number(config.bootstrapSessionEndTime),
 		infinityStartTime: Number(config.infinityStartTime),
 	});
+
+	return {spaceInfo, contractConfig};
 }

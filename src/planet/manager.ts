@@ -7,15 +7,7 @@ import type {PendingExit} from '../types/planet.js';
 import {acquirePlanets} from './acquire.js';
 import {exitPlanets} from './exit.js';
 import type {FleetStorage} from '../storage/interface.js';
-
-export interface ContractConfig {
-	genesis: bigint;
-	resolveWindow: bigint;
-	timePerDistance: bigint;
-	exitDuration: bigint;
-	acquireNumSpaceships: number;
-	[key: string]: bigint | number;
-}
+import type {ContractConfig} from '../types.js';
 
 /**
  * PlanetManager manages planet-related operations in the Conquest game

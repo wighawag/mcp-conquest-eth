@@ -1,67 +1,81 @@
-import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import type {CallToolResult} from '@modelcontextprotocol/sdk/types.js';
 import {z} from 'zod';
 import {PlanetManager} from '../planet/manager.js';
 
 /**
- * Create the acquirePlanets tool
+ * Tool handler for acquiring planets
  */
-export function createAcquirePlanetsTool(planetManager: PlanetManager): Tool {
-	return {
-		name: 'acquire_planets',
-		description:
-			'Acquire (stake) multiple planets in the Conquest game. This allows you to take ownership of unclaimed planets.',
-		inputSchema: z.object({
-			planetIds: z
-				.array(z.union([z.string(), z.number()]))
-				.describe('Array of planet location IDs to acquire (as hex strings or numbers)'),
-			amountToMint: z.number().describe('Amount of native token to spend to acquire the planets'),
-			tokenAmount: z.number().describe('Amount of staking token to spend to acquire the planets'),
-		}),
-		async execute(args) {
-			try {
-				const {planetIds, amountToMint, tokenAmount} = args;
+export async function handleAcquirePlanets(
+	args: unknown,
+	_extra: unknown,
+	planetManager: PlanetManager
+): Promise<CallToolResult> {
+	try {
+		const parsed = z.object({
+			planetIds: z.array(z.union([z.string(), z.number()])),
+			amountToMint: z.number(),
+			tokenAmount: z.number(),
+		}).parse(args);
+		const {planetIds, amountToMint, tokenAmount} = parsed;
 
-				// Convert planet IDs to BigInt
-				const planetIdsBigInt = planetIds.map((id) =>
-					typeof id === 'string' ? BigInt(id) : BigInt(id),
-				);
+		// Convert planet IDs to BigInt
+		const planetIdsBigInt = planetIds.map((id) =>
+			typeof id === 'string' ? BigInt(id) : BigInt(id)
+		);
 
-				const result = await planetManager.acquire(planetIdsBigInt, amountToMint, tokenAmount);
+		const result = await planetManager.acquire(
+			planetIdsBigInt,
+			amountToMint,
+			tokenAmount
+		);
 
-				return {
-					content: [
+		return {
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify(
 						{
-							type: 'text',
-							text: JSON.stringify(
-								{
-									success: true,
-									transactionHash: result.hash,
-									planetsAcquired: result.planetsAcquired.map((id) => id.toString()),
-								},
-								null,
-								2,
-							),
+							success: true,
+							transactionHash: result.hash,
+							planetsAcquired: result.planetsAcquired.map((id) => id.toString()),
 						},
-					],
-				};
-			} catch (error) {
-				return {
-					content: [
+						null,
+						2
+					),
+				},
+			],
+		};
+	} catch (error) {
+		return {
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify(
 						{
-							type: 'text',
-							text: JSON.stringify(
-								{
-									success: false,
-									error: error instanceof Error ? error.message : String(error),
-								},
-								null,
-								2,
-							),
+							success: false,
+							error: error instanceof Error ? error.message : String(error),
 						},
-					],
-					isError: true,
-				};
-			}
-		},
-	};
+						null,
+						2
+					),
+				},
+			],
+			isError: true,
+		};
+	}
 }
+
+/**
+ * Tool schema for acquiring planets (ZodRawShapeCompat format)
+ */
+export const acquirePlanetsSchema = {
+	planetIds: z
+		.array(z.union([z.string(), z.number()]))
+		.describe('Array of planet location IDs to acquire (as hex strings or numbers)'),
+	amountToMint: z
+		.number()
+		.describe('Amount of native token to spend to acquire the planets'),
+	tokenAmount: z
+		.number()
+		.describe('Amount of staking token to spend to acquire the planets'),
+};

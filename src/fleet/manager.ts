@@ -5,14 +5,7 @@ import type {PendingFleet} from '../types/fleet.js';
 import {sendFleet, sendFleetFor} from './send.js';
 import {resolveFleetWithSpaceInfo, getResolvableFleets} from './resolve.js';
 import type {FleetStorage} from '../storage/interface.js';
-
-export interface ContractConfig {
-	genesis: bigint;
-	resolveWindow: bigint;
-	timePerDistance: bigint;
-	exitDuration: bigint;
-	[key: string]: bigint;
-}
+import type {ContractConfig} from '../types.js';
 
 /**
  * FleetManager manages the lifecycle of fleets in the Conquest game

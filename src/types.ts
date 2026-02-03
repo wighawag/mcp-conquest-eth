@@ -12,6 +12,15 @@ export interface ContractClients {
 	gameContract: `0x${string}`;
 }
 
+export interface ContractConfig {
+	genesis: bigint;
+	resolveWindow: bigint;
+	timePerDistance: bigint;
+	exitDuration: bigint;
+	acquireNumSpaceships: number;
+	[key: string]: bigint | number;
+}
+
 export interface ExternalPlanet {
 	owner?: string;
 	ownerYakuzaSubscriptionEndTime: number;
