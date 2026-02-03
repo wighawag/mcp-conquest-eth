@@ -34,9 +34,15 @@ if (!privateKey) {
 	process.exit(1);
 }
 
-if (!options.rpcUrl) {
-	console.error('Error: --rpc-url option is required');
-	process.exit(1);
+let rpcUrl = options.rpcUrl;
+if (!rpcUrl) {
+	rpcUrl = process.env.RPC_URL;
+	if (!rpcUrl) {
+		console.error(
+			'Error: --rpc-url option is required, alternatively set RPC_URL environment variable',
+		);
+		process.exit(1);
+	}
 }
 
 if (!options.gameContract) {
@@ -46,7 +52,7 @@ if (!options.gameContract) {
 
 const transport = new StdioServerTransport();
 
-const chain = await getChain(options.rpcUrl);
+const chain = await getChain(rpcUrl);
 const server = createServer(
 	{
 		chain,
