@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { FleetManager } from '../fleet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {FleetManager} from '../fleet/manager.js';
 
 /**
  * Create the getPendingFleets tool
@@ -39,7 +39,7 @@ export function createGetPendingFleetsTool(fleetManager: FleetManager): Tool {
 									})),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -55,7 +55,7 @@ export function createGetPendingFleetsTool(fleetManager: FleetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

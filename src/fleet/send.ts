@@ -1,10 +1,10 @@
-import type { Address } from 'viem';
-import type { WalletClient } from 'viem';
-import type { SpaceInfo } from '../../conquest-eth-v0-contracts/js/index.js';
-import type { PendingFleet } from '../types/fleet.js';
-import { computeToHash, computeFleetId, generateSecret } from '../util/hashing.js';
-import { calculateEstimatedArrivalTime, getCurrentTimestamp } from '../util/time.js';
-import type { FleetStorage } from '../storage/interface.js';
+import type {Address} from 'viem';
+import type {WalletClient} from 'viem';
+import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
+import type {PendingFleet} from '../types/fleet.js';
+import {computeToHash, computeFleetId, generateSecret} from '../util/hashing.js';
+import {calculateEstimatedArrivalTime, getCurrentTimestamp} from '../util/time.js';
+import type {FleetStorage} from '../storage/interface.js';
 
 export interface ContractConfig {
 	genesis: bigint;
@@ -49,7 +49,7 @@ export async function sendFleet(
 		specific?: Address;
 		arrivalTimeWanted?: bigint;
 		secret?: `0x${string}`;
-	}
+	},
 ): Promise<PendingFleet> {
 	const fleetSender = walletClient.account!.address;
 	const operator = fleetSender; // Default to same address
@@ -72,7 +72,7 @@ export async function sendFleet(
 	const estimatedArrivalTime = calculateEstimatedArrivalTime(
 		BigInt(distance),
 		contractConfig.timePerDistance,
-		contractConfig.genesis
+		contractConfig.genesis,
 	);
 
 	// Compute the toHash (commitment to destination + secret)
@@ -156,7 +156,7 @@ export async function sendFleetFor(
 		specific?: Address;
 		arrivalTimeWanted?: bigint;
 		secret?: `0x${string}`;
-	}
+	},
 ): Promise<PendingFleet> {
 	const operator = walletClient.account!.address;
 
@@ -178,7 +178,7 @@ export async function sendFleetFor(
 	const estimatedArrivalTime = calculateEstimatedArrivalTime(
 		BigInt(distance),
 		contractConfig.timePerDistance,
-		contractConfig.genesis
+		contractConfig.genesis,
 	);
 
 	// Compute the toHash (commitment to destination + secret)
@@ -190,13 +190,15 @@ export async function sendFleetFor(
 		address: fleetsCommitContract.address as Address,
 		abi: fleetsCommitContract.abi,
 		functionName: 'sendFor',
-		args: [{
-			fleetSender,
-			fleetOwner,
-			from: fromPlanetId,
-			quantity,
-			toHash,
-		}],
+		args: [
+			{
+				fleetSender,
+				fleetOwner,
+				from: fromPlanetId,
+				quantity,
+				toHash,
+			},
+		],
 		account: operator,
 	});
 

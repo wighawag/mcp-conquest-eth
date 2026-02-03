@@ -30,10 +30,7 @@ export function areaFromLocation(locationX: number, locationY: number): bigint {
 	return xyToLocation(centerAreaX, centerAreaY);
 }
 
-export function areasAroundLocation(
-	locationX: number,
-	locationY: number,
-): bigint[] {
+export function areasAroundLocation(locationX: number, locationY: number): bigint[] {
 	const absX = Math.abs(locationX);
 	const signX = locationX < -12 ? -1 : 1;
 	const centerAreaX = signX * Math.floor((absX + 12) / 24);
@@ -85,10 +82,7 @@ export function zoneFromLocation(locationX: number, locationY: number): bigint {
 	return xyToLocation(centerZoneX, centerZoneY);
 }
 
-export function zonesFromLocation(
-	locationX: number,
-	locationY: number,
-): bigint[] {
+export function zonesFromLocation(locationX: number, locationY: number): bigint[] {
 	const absX = Math.abs(locationX);
 	const signX = locationX < -32 ? -1 : 1;
 	const centerZoneX = signX * Math.floor((absX + 32) / 64);
@@ -141,12 +135,7 @@ export function nextInSpiral<T>(
 	const x = pointer.x + dx;
 	const y = pointer.y + dy;
 
-	if (
-		(x == 0 && y == -1) ||
-		x == y ||
-		(x < 0 && x == -y) ||
-		(x > 0 && -x - 1 == y)
-	) {
+	if ((x == 0 && y == -1) || x == y || (x < 0 && x == -y) || (x > 0 && -x - 1 == y)) {
 		const tmp = dy;
 		dy = -dx;
 		dx = tmp;

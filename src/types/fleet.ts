@@ -1,4 +1,4 @@
-import type { Address } from 'viem';
+import type {Address} from 'viem';
 
 export interface PendingFleet {
 	fleetId: string; // Computed from toHash, from, fleetSender, operator

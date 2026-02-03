@@ -1,6 +1,6 @@
-import { SpaceInfo } from '../../conquest-eth-v0-contracts/js/index.js';
-import type { PublicClient } from 'viem';
-import { Artifact_IOuterSpaceInformation } from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceInformation.js';
+import {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
+import type {PublicClient} from 'viem';
+import {Artifact_IOuterSpaceInformation} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceInformation.js';
 
 export async function createSpaceInfo(
 	publicClient: PublicClient,
@@ -22,9 +22,7 @@ export async function createSpaceInfo(
 		acquireNumSpaceships: Number(config.acquireNumSpaceships),
 		productionSpeedUp: Number(config.productionSpeedUp),
 		productionCapAsDuration: Number(config.productionCapAsDuration),
-		upkeepProductionDecreaseRatePer10000th: Number(
-			config.upkeepProductionDecreaseRatePer10000th,
-		),
+		upkeepProductionDecreaseRatePer10000th: Number(config.upkeepProductionDecreaseRatePer10000th),
 		fleetSizeFactor6: Number(config.fleetSizeFactor6),
 		giftTaxPer10000: Number(config.giftTaxPer10000),
 		stakeRange: config.stakeRange,

@@ -1,22 +1,19 @@
-import { keccak256, toBytes, encodeAbiParameters } from 'viem';
-import type { Address } from 'viem';
+import {keccak256, toBytes, encodeAbiParameters} from 'viem';
+import type {Address} from 'viem';
 
 /**
  * Compute the toHash used in fleet commit phase
  * This hashes the destination planet and secret together
  */
-export function computeToHash(
-	toPlanetId: bigint,
-	secret: `0x${string}`
-): `0x${string}` {
+export function computeToHash(toPlanetId: bigint, secret: `0x${string}`): `0x${string}` {
 	return keccak256(
 		encodeAbiParameters(
 			[
-				{ name: 'to', type: 'uint256' },
-				{ name: 'secret', type: 'bytes32' },
+				{name: 'to', type: 'uint256'},
+				{name: 'secret', type: 'bytes32'},
 			],
-			[toPlanetId, secret]
-		)
+			[toPlanetId, secret],
+		),
 	) as `0x${string}`;
 }
 
@@ -29,18 +26,18 @@ export function computeFleetId(
 	toHash: `0x${string}`,
 	fromPlanetId: bigint,
 	fleetSender: Address,
-	operator: Address
+	operator: Address,
 ): `0x${string}` {
 	return keccak256(
 		encodeAbiParameters(
 			[
-				{ name: 'toHash', type: 'bytes32' },
-				{ name: 'from', type: 'uint256' },
-				{ name: 'fleetSender', type: 'address' },
-				{ name: 'operator', type: 'address' },
+				{name: 'toHash', type: 'bytes32'},
+				{name: 'from', type: 'uint256'},
+				{name: 'fleetSender', type: 'address'},
+				{name: 'operator', type: 'address'},
 			],
-			[toHash, fromPlanetId, fleetSender, operator]
-		)
+			[toHash, fromPlanetId, fleetSender, operator],
+		),
 	) as `0x${string}`;
 }
 

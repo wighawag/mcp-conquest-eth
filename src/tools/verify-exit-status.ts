@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { PlanetManager } from '../planet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {PlanetManager} from '../planet/manager.js';
 
 /**
  * Create the verifyExitStatus tool
@@ -17,10 +17,10 @@ export function createVerifyExitStatusTool(planetManager: PlanetManager): Tool {
 		}),
 		async execute(args) {
 			try {
-				const { planetId } = args;
+				const {planetId} = args;
 
 				const result = await planetManager.verifyExitStatus(
-					typeof planetId === 'string' ? BigInt(planetId) : BigInt(planetId)
+					typeof planetId === 'string' ? BigInt(planetId) : BigInt(planetId),
 				);
 
 				return {
@@ -40,7 +40,7 @@ export function createVerifyExitStatusTool(planetManager: PlanetManager): Tool {
 									exitCompleteTime: result.exitCompleteTime,
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -56,7 +56,7 @@ export function createVerifyExitStatusTool(planetManager: PlanetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

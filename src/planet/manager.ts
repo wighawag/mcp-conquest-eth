@@ -1,12 +1,12 @@
-import type { Address } from 'viem';
-import type { WalletClient } from 'viem';
-import type { SpaceInfo } from '../../conquest-eth-v0-contracts/js/index.js';
-import type { PlanetInfo } from '../../conquest-eth-v0-contracts/js/types.js';
-import type { ExternalPlanet } from '../types/planet.js';
-import type { PendingExit } from '../types/planet.js';
-import { acquirePlanets } from './acquire.js';
-import { exitPlanets } from './exit.js';
-import type { FleetStorage } from '../storage/interface.js';
+import type {Address} from 'viem';
+import type {WalletClient} from 'viem';
+import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
+import type {PlanetInfo} from '../../conquest-eth-v0-contracts/js/types.js';
+import type {ExternalPlanet} from '../types/planet.js';
+import type {PendingExit} from '../types/planet.js';
+import {acquirePlanets} from './acquire.js';
+import {exitPlanets} from './exit.js';
+import type {FleetStorage} from '../storage/interface.js';
 
 export interface ContractConfig {
 	genesis: bigint;
@@ -38,7 +38,7 @@ export class PlanetManager {
 		},
 		private readonly spaceInfo: SpaceInfo,
 		private readonly contractConfig: ContractConfig,
-		private readonly storage: FleetStorage
+		private readonly storage: FleetStorage,
 	) {}
 
 	/**
@@ -47,22 +47,25 @@ export class PlanetManager {
 	async acquire(
 		planetIds: bigint[],
 		amountToMint: number,
-		tokenAmount: number
-	): Promise<{ hash: `0x${string}`; planetsAcquired: bigint[] }> {
+		tokenAmount: number,
+	): Promise<{hash: `0x${string}`; planetsAcquired: bigint[]}> {
 		return acquirePlanets(
 			this.walletClient,
 			this.stakingContract.address as Address,
 			this.stakingContract.abi,
 			planetIds,
 			amountToMint,
-			tokenAmount
+			tokenAmount,
 		);
 	}
 
 	/**
 	 * Exit (unstake) multiple planets
 	 */
-	async exit(planetIds: bigint[], owner?: Address): Promise<{ hash: `0x${string}`; exitsInitiated: bigint[] }> {
+	async exit(
+		planetIds: bigint[],
+		owner?: Address,
+	): Promise<{hash: `0x${string}`; exitsInitiated: bigint[]}> {
 		const exitOwner = owner || this.walletClient.account!.address;
 		return exitPlanets(
 			this.walletClient,
@@ -71,7 +74,7 @@ export class PlanetManager {
 			exitOwner,
 			planetIds,
 			this.contractConfig.exitDuration,
-			this.storage
+			this.storage,
 		);
 	}
 
@@ -86,7 +89,7 @@ export class PlanetManager {
 	 * Get multiple planet infos
 	 */
 	getPlanetInfos(planetIds: bigint[]): (PlanetInfo | undefined)[] {
-		return planetIds.map(id => this.getPlanetInfo(id));
+		return planetIds.map((id) => this.getPlanetInfo(id));
 	}
 
 	/**
@@ -95,22 +98,22 @@ export class PlanetManager {
 	async getPlanetsAround(
 		centerX: number,
 		centerY: number,
-		radius: number
-	): Promise<{ info: PlanetInfo; state?: ExternalPlanet }[]> {
+		radius: number,
+	): Promise<{info: PlanetInfo; state?: ExternalPlanet}[]> {
 		// Get planet infos from SpaceInfo
 		const planets = [];
 		for (const planet of this.spaceInfo.yieldPlanetsFromRect(
 			centerX - radius,
 			centerY - radius,
 			centerX + radius,
-			centerY + radius
+			centerY + radius,
 		)) {
 			// Calculate actual distance to filter by radius
 			const dx = planet.location.x - centerX;
 			const dy = planet.location.y - centerY;
 			const distance = Math.sqrt(dx * dx + dy * dy);
 			if (distance <= radius) {
-				planets.push({ info: planet });
+				planets.push({info: planet});
 			}
 		}
 		return planets;
@@ -119,25 +122,31 @@ export class PlanetManager {
 	/**
 	 * Get my planets (owned by the current wallet)
 	 */
-	async getMyPlanets(radius: number = 100): Promise<Array<{ info: PlanetInfo; state: ExternalPlanet }>> {
+	async getMyPlanets(
+		radius: number = 100,
+	): Promise<Array<{info: PlanetInfo; state: ExternalPlanet}>> {
 		const sender = this.walletClient.account!.address;
 
 		// For now, use a simple approach: get all planets in area and filter by owner
 		// A better approach would be to use an index or The Graph
-		const myPlanets: Array<{ info: PlanetInfo; state: ExternalPlanet }> = [];
+		const myPlanets: Array<{info: PlanetInfo; state: ExternalPlanet}> = [];
 
 		// Get planets from 0,0 out to radius
 		for (const planet of this.spaceInfo.yieldPlanetsFromRect(-radius, -radius, radius, radius)) {
 			// Query contract for planet state
-			const states = await (this.infoContract.publicClient as any).readContract({
+			const states = (await (this.infoContract.publicClient as any).readContract({
 				address: this.infoContract.address as Address,
 				abi: this.infoContract.abi,
 				functionName: 'getPlanetStates',
 				args: [[planet.location.id]],
-			}) as ExternalPlanet[];
+			})) as ExternalPlanet[];
 
-			if (states.length > 0 && states[0].owner && states[0].owner.toLowerCase() === sender.toLowerCase()) {
-				myPlanets.push({ info: planet, state: states[0] });
+			if (
+				states.length > 0 &&
+				states[0].owner &&
+				states[0].owner.toLowerCase() === sender.toLowerCase()
+			) {
+				myPlanets.push({info: planet, state: states[0]});
 			}
 		}
 
@@ -155,19 +164,21 @@ export class PlanetManager {
 	/**
 	 * Verify exit status for a planet
 	 */
-	async verifyExitStatus(planetId: bigint): Promise<{ exit: PendingExit; interrupted: boolean; newOwner?: Address }> {
+	async verifyExitStatus(
+		planetId: bigint,
+	): Promise<{exit: PendingExit; interrupted: boolean; newOwner?: Address}> {
 		const exit = await this.storage.getPendingExit(planetId);
 		if (!exit) {
 			throw new Error(`No pending exit found for planet ${planetId}`);
 		}
 
 		// Query contract for current planet state
-		const states = await (this.infoContract.publicClient as any).readContract({
+		const states = (await (this.infoContract.publicClient as any).readContract({
 			address: this.infoContract.address as Address,
 			abi: this.infoContract.abi,
 			functionName: 'getPlanetStates',
 			args: [[planetId]],
-		}) as ExternalPlanet[];
+		})) as ExternalPlanet[];
 
 		if (states.length === 0) {
 			throw new Error(`Could not get planet state for ${planetId}`);
@@ -204,7 +215,7 @@ export class PlanetManager {
 	 * Clean up old completed exits
 	 */
 	async cleanupOldCompletedExits(olderThanDays: number = 7): Promise<void> {
-		const olderThan = Math.floor(Date.now() / 1000) - (olderThanDays * 24 * 60 * 60);
+		const olderThan = Math.floor(Date.now() / 1000) - olderThanDays * 24 * 60 * 60;
 		await this.storage.cleanupOldCompletedExits(olderThan);
 	}
 

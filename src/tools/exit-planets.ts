@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { PlanetManager } from '../planet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {PlanetManager} from '../planet/manager.js';
 
 /**
  * Create the exitPlanets tool
@@ -17,11 +17,11 @@ export function createExitPlanetsTool(planetManager: PlanetManager): Tool {
 		}),
 		async execute(args) {
 			try {
-				const { planetIds } = args;
+				const {planetIds} = args;
 
 				// Convert planet IDs to BigInt
 				const planetIdsBigInt = planetIds.map((id) =>
-					typeof id === 'string' ? BigInt(id) : BigInt(id)
+					typeof id === 'string' ? BigInt(id) : BigInt(id),
 				);
 
 				const result = await planetManager.exit(planetIdsBigInt);
@@ -38,7 +38,7 @@ export function createExitPlanetsTool(planetManager: PlanetManager): Tool {
 									exitDurations: result.exitDurations.map((d) => d.toString()),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -54,7 +54,7 @@ export function createExitPlanetsTool(planetManager: PlanetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { PlanetManager } from '../planet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {PlanetManager} from '../planet/manager.js';
 
 /**
  * Create the getMyPlanets tool
@@ -18,7 +18,7 @@ export function createGetMyPlanetsTool(planetManager: PlanetManager): Tool {
 		}),
 		async execute(args) {
 			try {
-				const { radius } = args;
+				const {radius} = args;
 				const planets = await planetManager.getMyPlanets(radius);
 
 				return {
@@ -28,7 +28,7 @@ export function createGetMyPlanetsTool(planetManager: PlanetManager): Tool {
 							text: JSON.stringify(
 								{
 									success: true,
-									planets: planets.map(({ info, state }) => ({
+									planets: planets.map(({info, state}) => ({
 										planetId: info.location.id.toString(),
 										owner: state.owner,
 										location: {
@@ -42,7 +42,7 @@ export function createGetMyPlanetsTool(planetManager: PlanetManager): Tool {
 									})),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -58,7 +58,7 @@ export function createGetMyPlanetsTool(planetManager: PlanetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

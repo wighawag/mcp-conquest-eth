@@ -1,10 +1,10 @@
-import type { Address } from 'viem';
-import type { WalletClient } from 'viem';
-import type { SpaceInfo } from '../../conquest-eth-v0-contracts/js/index.js';
-import type { PendingFleet } from '../types/fleet.js';
-import { sendFleet, sendFleetFor } from './send.js';
-import { resolveFleetWithSpaceInfo, getResolvableFleets } from './resolve.js';
-import type { FleetStorage } from '../storage/interface.js';
+import type {Address} from 'viem';
+import type {WalletClient} from 'viem';
+import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
+import type {PendingFleet} from '../types/fleet.js';
+import {sendFleet, sendFleetFor} from './send.js';
+import {resolveFleetWithSpaceInfo, getResolvableFleets} from './resolve.js';
+import type {FleetStorage} from '../storage/interface.js';
 
 export interface ContractConfig {
 	genesis: bigint;
@@ -36,7 +36,7 @@ export class FleetManager {
 		private readonly spaceInfo: SpaceInfo,
 		private readonly contractConfig: ContractConfig,
 		private readonly storage: FleetStorage,
-		private readonly contractAddress: Address
+		private readonly contractAddress: Address,
 	) {}
 
 	/**
@@ -51,7 +51,7 @@ export class FleetManager {
 			specific?: Address;
 			arrivalTimeWanted?: bigint;
 			secret?: `0x${string}`;
-		}
+		},
 	): Promise<PendingFleet> {
 		return sendFleet(
 			this.walletClient,
@@ -63,7 +63,7 @@ export class FleetManager {
 			this.spaceInfo,
 			this.contractConfig,
 			this.storage,
-			options
+			options,
 		);
 	}
 
@@ -81,7 +81,7 @@ export class FleetManager {
 			specific?: Address;
 			arrivalTimeWanted?: bigint;
 			secret?: `0x${string}`;
-		}
+		},
 	): Promise<PendingFleet> {
 		return sendFleetFor(
 			this.walletClient,
@@ -95,20 +95,22 @@ export class FleetManager {
 			this.spaceInfo,
 			this.contractConfig,
 			this.storage,
-			options
+			options,
 		);
 	}
 
 	/**
 	 * Resolve (reveal) a fleet to complete its journey
 	 */
-	async resolve(fleetId: string): Promise<{ resolved: true; fleet: PendingFleet } | { resolved: false; reason: string }> {
+	async resolve(
+		fleetId: string,
+	): Promise<{resolved: true; fleet: PendingFleet} | {resolved: false; reason: string}> {
 		return resolveFleetWithSpaceInfo(
 			this.walletClient,
 			this.fleetsRevealContract,
 			this.spaceInfo,
 			fleetId,
-			this.storage
+			this.storage,
 		);
 	}
 
@@ -146,29 +148,29 @@ export class FleetManager {
 	 */
 	async resolveAllReady(): Promise<{
 		successful: PendingFleet[];
-		failed: Array<{ fleetId: string; reason: string }>;
+		failed: Array<{fleetId: string; reason: string}>;
 	}> {
 		const readyFleets = await this.getResolvableFleets();
 		const successful: PendingFleet[] = [];
-		const failed: Array<{ fleetId: string; reason: string }> = [];
+		const failed: Array<{fleetId: string; reason: string}> = [];
 
 		for (const fleet of readyFleets) {
 			const result = await this.resolve(fleet.fleetId);
 			if (result.resolved) {
 				successful.push(result.fleet);
 			} else {
-				failed.push({ fleetId: fleet.fleetId, reason: result.reason });
+				failed.push({fleetId: fleet.fleetId, reason: result.reason});
 			}
 		}
 
-		return { successful, failed };
+		return {successful, failed};
 	}
 
 	/**
 	 * Clean up old resolved fleets from storage
 	 */
 	async cleanupOldResolvedFleets(olderThanDays: number = 7): Promise<void> {
-		const olderThan = Math.floor(Date.now() / 1000) - (olderThanDays * 24 * 60 * 60);
+		const olderThan = Math.floor(Date.now() / 1000) - olderThanDays * 24 * 60 * 60;
 		await this.storage.cleanupOldResolvedFleets(olderThan);
 	}
 }

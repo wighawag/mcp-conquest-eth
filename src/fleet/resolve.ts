@@ -1,13 +1,13 @@
-import type { Address } from 'viem';
-import type { WalletClient } from 'viem';
-import type { SpaceInfo } from '../../conquest-eth-v0-contracts/js/index.js';
-import type { PendingFleet, FleetResolution } from '../types/fleet.js';
-import { getCurrentTimestamp } from '../util/time.js';
-import type { FleetStorage } from '../storage/interface.js';
+import type {Address} from 'viem';
+import type {WalletClient} from 'viem';
+import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
+import type {PendingFleet, FleetResolution} from '../types/fleet.js';
+import {getCurrentTimestamp} from '../util/time.js';
+import type {FleetStorage} from '../storage/interface.js';
 
 /**
  * Resolve (reveal) a fleet to complete its journey and trigger combat
- * 
+ *
  * @param walletClient - Viem wallet client for signing transactions
  * @param fleetsRevealContract - The fleets reveal contract instance
  * @param fleetId - The fleet ID to resolve
@@ -23,23 +23,23 @@ export async function resolveFleet(
 		walletClient: WalletClient | undefined;
 	},
 	fleetId: string,
-	storage: FleetStorage
-): Promise<{ resolved: true; fleet: PendingFleet } | { resolved: false; reason: string }> {
+	storage: FleetStorage,
+): Promise<{resolved: true; fleet: PendingFleet} | {resolved: false; reason: string}> {
 	// Get the pending fleet from storage
 	const pendingFleet = await storage.getFleet(fleetId);
 
 	if (!pendingFleet) {
-		return { resolved: false, reason: `Fleet ${fleetId} not found in storage` };
+		return {resolved: false, reason: `Fleet ${fleetId} not found in storage`};
 	}
 
 	if (pendingFleet.resolved) {
-		return { resolved: false, reason: `Fleet ${fleetId} has already been resolved` };
+		return {resolved: false, reason: `Fleet ${fleetId} has already been resolved`};
 	}
 
 	// The operator must be the same as the wallet client account
 	const operator = walletClient.account!.address;
 	if (pendingFleet.operator !== operator) {
-		return { resolved: false, reason: `Only the operator can resolve this fleet` };
+		return {resolved: false, reason: `Only the operator can resolve this fleet`};
 	}
 
 	// Build the FleetResolution struct
@@ -79,12 +79,12 @@ export async function resolveFleet(
 		resolvedAt,
 	};
 
-	return { resolved: true, fleet: resolvedFleet };
+	return {resolved: true, fleet: resolvedFleet};
 }
 
 /**
  * Resolve a fleet with custom SpaceInfo for distance calculation
- * 
+ *
  * @param walletClient - Viem wallet client for signing transactions
  * @param fleetsRevealContract - The fleets reveal contract instance
  * @param spaceInfo - SpaceInfo instance for distance calculation
@@ -102,23 +102,23 @@ export async function resolveFleetWithSpaceInfo(
 	},
 	spaceInfo: SpaceInfo,
 	fleetId: string,
-	storage: FleetStorage
-): Promise<{ resolved: true; fleet: PendingFleet } | { resolved: false; reason: string }> {
+	storage: FleetStorage,
+): Promise<{resolved: true; fleet: PendingFleet} | {resolved: false; reason: string}> {
 	// Get the pending fleet from storage
 	const pendingFleet = await storage.getFleet(fleetId);
 
 	if (!pendingFleet) {
-		return { resolved: false, reason: `Fleet ${fleetId} not found in storage` };
+		return {resolved: false, reason: `Fleet ${fleetId} not found in storage`};
 	}
 
 	if (pendingFleet.resolved) {
-		return { resolved: false, reason: `Fleet ${fleetId} has already been resolved` };
+		return {resolved: false, reason: `Fleet ${fleetId} has already been resolved`};
 	}
 
 	// The operator must be the same as the wallet client account
 	const operator = walletClient.account!.address;
 	if (pendingFleet.operator !== operator) {
-		return { resolved: false, reason: `Only the operator can resolve this fleet` };
+		return {resolved: false, reason: `Only the operator can resolve this fleet`};
 	}
 
 	// Get planet info for distance calculation
@@ -126,7 +126,7 @@ export async function resolveFleetWithSpaceInfo(
 	const toPlanet = spaceInfo.getPlanetInfoViaId(pendingFleet.toPlanetId);
 
 	if (!fromPlanet || !toPlanet) {
-		return { resolved: false, reason: 'Could not get planet info for one or both planets' };
+		return {resolved: false, reason: 'Could not get planet info for one or both planets'};
 	}
 
 	// Calculate distance using SpaceInfo
@@ -169,24 +169,24 @@ export async function resolveFleetWithSpaceInfo(
 		resolvedAt,
 	};
 
-	return { resolved: true, fleet: resolvedFleet };
+	return {resolved: true, fleet: resolvedFleet};
 }
 
 /**
  * Get fleets that can be resolved (not yet resolved and past resolve window)
- * 
+ *
  * @param storage - Storage instance for tracking pending fleets
  * @param resolveWindow - The resolve window duration in seconds from contract config
  * @returns List of fleets that can be resolved
  */
 export async function getResolvableFleets(
 	storage: FleetStorage,
-	resolveWindow: bigint
+	resolveWindow: bigint,
 ): Promise<PendingFleet[]> {
 	const currentTime = getCurrentTimestamp();
 	const fleets = await storage.getResolvableFleets();
 
-	return fleets.filter(fleet => {
+	return fleets.filter((fleet) => {
 		// Check if fleet is past the resolve window
 		const resolveWindowOpen = fleet.estimatedArrivalTime + Number(resolveWindow);
 		return !fleet.resolved && currentTime >= resolveWindowOpen;

@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { PlanetManager } from '../planet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {PlanetManager} from '../planet/manager.js';
 
 /**
  * Create the getPendingExits tool
@@ -35,7 +35,7 @@ export function createGetPendingExitsTool(planetManager: PlanetManager): Tool {
 									})),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -51,7 +51,7 @@ export function createGetPendingExitsTool(planetManager: PlanetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

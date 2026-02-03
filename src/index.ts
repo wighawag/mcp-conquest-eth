@@ -61,7 +61,7 @@ export function createServer(
 		params.chain,
 		options?.rpcURL || params.chain.rpcUrls.default.http[0],
 		gameContract,
-		params.privateKey
+		params.privateKey,
 	);
 
 	// Initialize SpaceInfo
@@ -71,7 +71,7 @@ export function createServer(
 		const result = await createSpaceInfo(
 			contractClients.publicClient,
 			contractClients.infoContract.address as `0x${string}`,
-			contractClients.infoContract.abi
+			contractClients.infoContract.abi,
 		);
 		spaceInfo = result.spaceInfo;
 		contractConfig = result.contractConfig;
@@ -91,7 +91,7 @@ export function createServer(
 			const result = await createSpaceInfo(
 				contractClients.publicClient,
 				contractClients.infoContract.address as `0x${string}`,
-				contractClients.infoContract.abi
+				contractClients.infoContract.abi,
 			);
 			spaceInfo = result.spaceInfo;
 			contractConfig = result.contractConfig;
@@ -105,7 +105,7 @@ export function createServer(
 				spaceInfo,
 				contractConfig,
 				storage,
-				gameContract
+				gameContract,
 			);
 		}
 
@@ -116,7 +116,7 @@ export function createServer(
 				contractClients.infoContract,
 				spaceInfo,
 				contractConfig,
-				storage
+				storage,
 			);
 		}
 	};
@@ -125,7 +125,8 @@ export function createServer(
 	server.registerTool(
 		'acquire_planets',
 		{
-			description: 'Acquire (stake) multiple planets in the Conquest game. This allows you to take ownership of unclaimed planets.',
+			description:
+				'Acquire (stake) multiple planets in the Conquest game. This allows you to take ownership of unclaimed planets.',
 			inputSchema: {
 				type: 'object',
 				properties: {
@@ -182,7 +183,8 @@ export function createServer(
 	server.registerTool(
 		'send_fleet',
 		{
-			description: 'Send a fleet from one planet to another in the Conquest game. The fleet will travel through space and can be resolved after arrival.',
+			description:
+				'Send a fleet from one planet to another in the Conquest game. The fleet will travel through space and can be resolved after arrival.',
 			inputSchema: {
 				type: 'object',
 				properties: {
@@ -200,7 +202,8 @@ export function createServer(
 					},
 					arrivalTimeWanted: {
 						type: 'number',
-						description: 'Desired arrival time (timestamp in seconds). If not specified, will be calculated based on distance.',
+						description:
+							'Desired arrival time (timestamp in seconds). If not specified, will be calculated based on distance.',
 					},
 					gift: {
 						type: 'boolean',
@@ -249,7 +252,8 @@ export function createServer(
 	server.registerTool(
 		'resolve_fleet',
 		{
-			description: 'Resolve a previously sent fleet. This must be called after the fleet arrival time + resolve window to reveal the destination and secret.',
+			description:
+				'Resolve a previously sent fleet. This must be called after the fleet arrival time + resolve window to reveal the destination and secret.',
 			inputSchema: {
 				type: 'object',
 				properties: {
@@ -295,7 +299,8 @@ export function createServer(
 	server.registerTool(
 		'exit_planets',
 		{
-			description: 'Exit (unstake) multiple planets to retrieve staked tokens. The exit process takes time and must be completed later.',
+			description:
+				'Exit (unstake) multiple planets to retrieve staked tokens. The exit process takes time and must be completed later.',
 			inputSchema: {
 				type: 'object',
 				properties: {
@@ -382,7 +387,8 @@ export function createServer(
 	server.registerTool(
 		'verify_exit_status',
 		{
-			description: "Check and update the status of a planet's exit operation. Verifies if the exit has completed or been interrupted.",
+			description:
+				"Check and update the status of a planet's exit operation. Verifies if the exit has completed or been interrupted.",
 			inputSchema: {
 				type: 'object',
 				properties: {
@@ -472,7 +478,8 @@ export function createServer(
 	server.registerTool(
 		'get_planets_around',
 		{
-			description: 'Get planets around a specific location within a certain radius. Useful for finding targets for fleet movement.',
+			description:
+				'Get planets around a specific location within a certain radius. Useful for finding targets for fleet movement.',
 			inputSchema: {
 				type: 'object',
 				properties: {

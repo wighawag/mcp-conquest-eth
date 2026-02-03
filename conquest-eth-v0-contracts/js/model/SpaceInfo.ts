@@ -111,8 +111,7 @@ export class SpaceInfo {
 		this.acquireNumSpaceships = config.acquireNumSpaceships;
 		this.productionSpeedUp = config.productionSpeedUp;
 		this.productionCapAsDuration = config.productionCapAsDuration;
-		this.upkeepProductionDecreaseRatePer10000th =
-			config.upkeepProductionDecreaseRatePer10000th;
+		this.upkeepProductionDecreaseRatePer10000th = config.upkeepProductionDecreaseRatePer10000th;
 		this.fleetSizeFactor6 = config.fleetSizeFactor6;
 		this.genesis = config.genesis;
 		this.giftTaxPer10000 = config.giftTaxPer10000;
@@ -206,9 +205,7 @@ export class SpaceInfo {
 
 		const location = xyToLocation(x, y);
 
-		const data = keccak256(
-			encodePacked(['bytes32', 'uint256'], [this.genesis, location]),
-		);
+		const data = keccak256(encodePacked(['bytes32', 'uint256'], [this.genesis, location]));
 
 		const hasPlanet = value8Mod(data, 52, 16) == 1;
 		if (!hasPlanet) {
@@ -223,13 +220,8 @@ export class SpaceInfo {
 
 		const stakeIndex = productionIndex;
 		const stake = this.roundTo1Decimal
-			? Math.floor(
-					(this.stakeRangeArray[stakeIndex] * this.stakeMultiplier10000th) /
-						1000,
-				) * 1000
-			: Math.floor(
-					this.stakeRangeArray[stakeIndex] * this.stakeMultiplier10000th,
-				);
+			? Math.floor((this.stakeRangeArray[stakeIndex] * this.stakeMultiplier10000th) / 1000) * 1000
+			: Math.floor(this.stakeRangeArray[stakeIndex] * this.stakeMultiplier10000th);
 		// console.log({stake});
 		const production = normal16(
 			data,
@@ -273,12 +265,10 @@ export class SpaceInfo {
 				subX,
 				subY,
 				maxTravelingUpkeep: Math.floor(
-					this.acquireNumSpaceships +
-						(production * this.productionCapAsDuration) / hours(1),
+					this.acquireNumSpaceships + (production * this.productionCapAsDuration) / hours(1),
 				),
 				cap: Math.floor(
-					this.acquireNumSpaceships +
-						(production * this.productionCapAsDuration) / hours(1),
+					this.acquireNumSpaceships + (production * this.productionCapAsDuration) / hours(1),
 				),
 			},
 		};
@@ -306,9 +296,7 @@ export class SpaceInfo {
 	): {timeLeft: number; timePassed: number; fullTime: number} {
 		const speed = fromPlanet.stats.speed;
 		const fullDistance = this.distance(fromPlanet, toPlanet);
-		const fullTime = Math.floor(
-			fullDistance * ((this.timePerDistance * 10000) / speed),
-		);
+		const fullTime = Math.floor(fullDistance * ((this.timePerDistance * 10000) / speed));
 		const timePassed = time - startTime;
 		const timeLeft = fullTime - timePassed;
 		return {timeLeft, timePassed, fullTime};
@@ -371,15 +359,12 @@ export class SpaceInfo {
 		let upkeepRepaid = 0;
 		if (planetUpdate.travelingUpkeep > 0) {
 			upkeepRepaid = Math.floor(
-				(amountProducedTheWholeTime *
-					this.upkeepProductionDecreaseRatePer10000th) /
-					10000,
+				(amountProducedTheWholeTime * this.upkeepProductionDecreaseRatePer10000th) / 10000,
 			);
 			if (upkeepRepaid > planetUpdate.travelingUpkeep) {
 				upkeepRepaid = planetUpdate.travelingUpkeep;
 			}
-			planetUpdate.travelingUpkeep =
-				planetUpdate.travelingUpkeep - upkeepRepaid;
+			planetUpdate.travelingUpkeep = planetUpdate.travelingUpkeep - upkeepRepaid;
 		}
 
 		let newNumSpaceships = planetUpdate.numSpaceships;
@@ -387,25 +372,20 @@ export class SpaceInfo {
 		if (this.productionCapAsDuration > 0) {
 			// NOTE no need of productionSpeedUp for the cap because _productionCapAsDuration can include it
 			const capWhenActive = Math.floor(
-				this.acquireNumSpaceships +
-					(production * this.productionCapAsDuration) / hours(1),
+				this.acquireNumSpaceships + (production * this.productionCapAsDuration) / hours(1),
 			);
 			const cap = planetUpdate.active ? capWhenActive : 0;
 
 			if (newNumSpaceships > cap) {
 				let decreaseRate = 1800;
 				if (planetUpdate.overflow > 0) {
-					decreaseRate = Math.floor(
-						(planetUpdate.overflow * 1800) / capWhenActive,
-					);
+					decreaseRate = Math.floor((planetUpdate.overflow * 1800) / capWhenActive);
 					if (decreaseRate < 1800) {
 						decreaseRate = 1800;
 					}
 				}
 
-				let decrease = Math.floor(
-					(timePassed * this.productionSpeedUp * decreaseRate) / hours(1),
-				);
+				let decrease = Math.floor((timePassed * this.productionSpeedUp * decreaseRate) / hours(1));
 				if (decrease > newNumSpaceships - cap) {
 					decrease = newNumSpaceships - cap;
 				}
@@ -419,19 +399,14 @@ export class SpaceInfo {
 					if (planetUpdate.travelingUpkeep > 0) {
 						const timeBeforeUpkeepBackToZero =
 							planetUpdate.travelingUpkeep /
-							((this.productionSpeedUp *
-								production *
-								this.upkeepProductionDecreaseRatePer10000th) /
+							((this.productionSpeedUp * production * this.upkeepProductionDecreaseRatePer10000th) /
 								hours(1) /
 								10000);
 						if (timeBeforeUpkeepBackToZero >= timePassed) {
 							extraUpkeepPaid = increase;
 						} else {
 							extraUpkeepPaid =
-								(timeBeforeUpkeepBackToZero *
-									this.productionSpeedUp *
-									production) /
-								hours(1);
+								(timeBeforeUpkeepBackToZero * this.productionSpeedUp * production) / hours(1);
 							if (extraUpkeepPaid > increase) {
 								extraUpkeepPaid = increase; // TODO remove ? should not be possible
 							}
@@ -456,9 +431,7 @@ export class SpaceInfo {
 				// let newTravelingUpkeep = planetUpdate.travelingUpkeep - extraUpkeepPaid;
 				const upkeepRepaid =
 					Math.floor(
-						(amountProducedTheWholeTime *
-							this.upkeepProductionDecreaseRatePer10000th) /
-							10000,
+						(amountProducedTheWholeTime * this.upkeepProductionDecreaseRatePer10000th) / 10000,
 					) + extraUpkeepPaid;
 
 				let newTravelingUpkeep = planetUpdate.travelingUpkeep - upkeepRepaid;
@@ -474,9 +447,7 @@ export class SpaceInfo {
 				newNumSpaceships += amountProducedTheWholeTime;
 			} else {
 				// NOTE no need to overflow here  as there is no production cap, so no incentive to regroup spaceships
-				let decrease = Math.floor(
-					(timePassed * this.productionSpeedUp * 1800) / hours(1),
-				);
+				let decrease = Math.floor((timePassed * this.productionSpeedUp * 1800) / hours(1));
 				if (decrease > newNumSpaceships) {
 					decrease = newNumSpaceships;
 					newNumSpaceships = 0;
@@ -490,8 +461,7 @@ export class SpaceInfo {
 			newNumSpaceships = ACTIVE_MASK - 1;
 		}
 		planetUpdate.numSpaceships = newNumSpaceships;
-		planetUpdate.natives =
-			planetUpdate.numSpaceships == 0 && !planetUpdate.active;
+		planetUpdate.natives = planetUpdate.numSpaceships == 0 && !planetUpdate.active;
 		if (planetUpdate.natives) {
 			planetUpdate.owner = undefined;
 		}
@@ -517,11 +487,9 @@ export class SpaceInfo {
 			capturing: currentPlanetState.capturing,
 			inReach: currentPlanetState.inReach,
 			rewardGiver: currentPlanetState.rewardGiver,
-			requireClaimAcknowledgement:
-				currentPlanetState.requireClaimAcknowledgement,
+			requireClaimAcknowledgement: currentPlanetState.requireClaimAcknowledgement,
 			metadata: currentPlanetState.metadata,
-			ownerYakuzaSubscriptionEndTime:
-				currentPlanetState.ownerYakuzaSubscriptionEndTime,
+			ownerYakuzaSubscriptionEndTime: currentPlanetState.ownerYakuzaSubscriptionEndTime,
 		};
 
 		this.computePlanetUpdateForTimeElapsed(
@@ -538,11 +506,7 @@ export class SpaceInfo {
 		toPlanetState: PlanetState,
 		duration: number,
 	): number {
-		const newPlanetState = this.computeFuturePlanetState(
-			toPlanet,
-			toPlanetState,
-			duration,
-		);
+		const newPlanetState = this.computeFuturePlanetState(toPlanet, toPlanetState, duration);
 
 		if (newPlanetState.natives) {
 			return toPlanet.stats.natives;
@@ -557,11 +521,7 @@ export class SpaceInfo {
 		duration: number,
 	): {minPlanetState: PlanetState; maxPlanetState: PlanetState} {
 		return {
-			minPlanetState: this.computeFuturePlanetState(
-				toPlanet,
-				toPlanetState,
-				Math.max(0, duration),
-			),
+			minPlanetState: this.computeFuturePlanetState(toPlanet, toPlanetState, Math.max(0, duration)),
 			maxPlanetState: this.computeFuturePlanetState(
 				toPlanet,
 				toPlanetState,
@@ -578,11 +538,7 @@ export class SpaceInfo {
 	): {min: number; max: number} {
 		// console.log({timeTraveled});
 		return {
-			min: this.numSpaceshipsAfterDuration(
-				toPlanet,
-				toPlanetState,
-				Math.max(0, duration),
-			),
+			min: this.numSpaceshipsAfterDuration(toPlanet, toPlanetState, Math.max(0, duration)),
 			max: this.numSpaceshipsAfterDuration(
 				toPlanet,
 				toPlanetState,
@@ -613,8 +569,7 @@ export class SpaceInfo {
 			const numSpaceshipsToProduce = numSpaceshipsToReach - numSpaceshipsSoFar;
 			// Math.floor((timePassed * this.productionSpeedUp * production) / hours(1));
 			const duration =
-				numSpaceshipsToProduce /
-				((planet.stats.production * this.productionSpeedUp) / hours(1));
+				numSpaceshipsToProduce / ((planet.stats.production * this.productionSpeedUp) / hours(1));
 			return {
 				amount: numSpaceshipsToProduce,
 				duration,
@@ -668,9 +623,7 @@ export class SpaceInfo {
 
 		let allies = false;
 		if (toPlayer) {
-			if (
-				toPlayer.address.toLowerCase() === fromPlayer?.address.toLowerCase()
-			) {
+			if (toPlayer.address.toLowerCase() === fromPlayer?.address.toLowerCase()) {
 				allies = true;
 			} else if (fromPlayer) {
 				if (toPlayer.alliances.length > 0 && fromPlayer.alliances.length > 0) {
@@ -688,22 +641,12 @@ export class SpaceInfo {
 
 		let taxAllies = allies;
 
-		if (
-			senderPlayer &&
-			toPlayer &&
-			fromPlayer &&
-			fromPlayer.address !== senderPlayer?.address
-		) {
+		if (senderPlayer && toPlayer && fromPlayer && fromPlayer.address !== senderPlayer?.address) {
 			taxAllies = false;
-			if (
-				toPlayer.address.toLowerCase() === senderPlayer?.address.toLowerCase()
-			) {
+			if (toPlayer.address.toLowerCase() === senderPlayer?.address.toLowerCase()) {
 				taxAllies = true;
 			} else if (senderPlayer) {
-				if (
-					toPlayer.alliances.length > 0 &&
-					senderPlayer.alliances.length > 0
-				) {
+				if (toPlayer.alliances.length > 0 && senderPlayer.alliances.length > 0) {
 					const potentialAlliances = findCommonAlliances(
 						toPlayer.alliances.map((v) => v.address),
 						senderPlayer.alliances.map((v) => v.address),
@@ -726,10 +669,7 @@ export class SpaceInfo {
 					actualGift = allies;
 				}
 			} else {
-				if (
-					toPlayer &&
-					toPlayer.address.toLowerCase() === specific.toLowerCase()
-				) {
+				if (toPlayer && toPlayer.address.toLowerCase() === specific.toLowerCase()) {
 				}
 			}
 			// TODO more
@@ -786,15 +726,8 @@ export class SpaceInfo {
 		}
 
 		let fleetOwnerTax = false;
-		if (
-			senderPlayer &&
-			fromPlayer &&
-			senderPlayer?.address !== fromPlayer?.address
-		) {
-			if (
-				fromPlayer.alliances.length > 0 &&
-				senderPlayer.alliances.length > 0
-			) {
+		if (senderPlayer && fromPlayer && senderPlayer?.address !== fromPlayer?.address) {
+			if (fromPlayer.alliances.length > 0 && senderPlayer.alliances.length > 0) {
 				const potentialAlliances = findCommonAlliances(
 					fromPlayer.alliances.map((v) => v.address),
 					senderPlayer.alliances.map((v) => v.address),
@@ -834,9 +767,7 @@ export class SpaceInfo {
 			minOutcome.numSpaceshipsLeft = toPlanetState.natives
 				? toPlanet.stats.natives
 				: Number(
-						numDefenseMin +
-							(extra?.defense ? BigInt(extra.defense) : 0n) -
-							resultMin.defenderLoss,
+						numDefenseMin + (extra?.defense ? BigInt(extra.defense) : 0n) - resultMin.defenderLoss,
 					);
 		} else {
 			minOutcome.captured = true;
@@ -862,13 +793,9 @@ export class SpaceInfo {
 		let timeUntilFails = 0;
 		if (minOutcome.captured) {
 			// TODO consider upkeep and production reduction
-			const production =
-				((numDefenseMax - numDefenseMin) * 1000000n) /
-				BigInt(this.resolveWindow);
+			const production = ((numDefenseMax - numDefenseMin) * 1000000n) / BigInt(this.resolveWindow);
 			if (production > 0n) {
-				timeUntilFails = Number(
-					((resultMin.attackDamage - numDefenseMin) * 1000000n) / production,
-				);
+				timeUntilFails = Number(((resultMin.attackDamage - numDefenseMin) * 1000000n) / production);
 
 				if (timeUntilFails > this.resolveWindow) {
 					timeUntilFails = 0;
@@ -920,11 +847,11 @@ export class SpaceInfo {
 
 		const attackFactor =
 			numAttack *
-			(1000000n - BigInt(this.fleetSizeFactor6) +
+			(1000000n -
+				BigInt(this.fleetSizeFactor6) +
 				(numAttack * BigInt(this.fleetSizeFactor6)) / numDefense);
 
-		const attackDamage =
-			(attackFactor * BigInt(attack)) / BigInt(defense) / 1000000n;
+		const attackDamage = (attackFactor * BigInt(attack)) / BigInt(defense) / 1000000n;
 
 		if (numDefense > attackDamage) {
 			// attack fails
@@ -937,10 +864,10 @@ export class SpaceInfo {
 			// attack succeed
 			const defenseFactor =
 				numDefense *
-				(1000000n - BigInt(this.fleetSizeFactor6) +
+				(1000000n -
+					BigInt(this.fleetSizeFactor6) +
 					(numDefense * BigInt(this.fleetSizeFactor6)) / numAttack);
-			let defenseDamage =
-				(defenseFactor * BigInt(defense)) / BigInt(attack) / 1000000n;
+			let defenseDamage = (defenseFactor * BigInt(defense)) / BigInt(attack) / 1000000n;
 			if (defenseDamage >= numAttack) {
 				defenseDamage = numAttack - 1n;
 			}
@@ -961,10 +888,7 @@ export class SpaceInfo {
 		numSpaceshipsLeft: number;
 	} {
 		// console.log(planetState.owner, from);
-		if (
-			planetState.owner &&
-			planetState.owner?.toLowerCase() === from?.toLowerCase()
-		) {
+		if (planetState.owner && planetState.owner?.toLowerCase() === from?.toLowerCase()) {
 			return {
 				success: true,
 				numSpaceshipsLeft: planetState.numSpaceships + 100000, // TODO use contract _acquireNumSpaceships
@@ -981,9 +905,7 @@ export class SpaceInfo {
 			}
 		}
 
-		const numDefense = planetState.natives
-			? planetInfo.stats.natives
-			: planetState.numSpaceships;
+		const numDefense = planetState.natives ? planetInfo.stats.natives : planetState.numSpaceships;
 		const {attackerLoss} = this.combat(
 			10000,
 			100000n, // TODO use contract _acquireNumSpaceships

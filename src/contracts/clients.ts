@@ -1,15 +1,15 @@
-import { createPublicClient, createWalletClient, http } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import type { Chain, Address, PublicClient, WalletClient } from 'viem';
-import { Artifact_IOuterSpaceInformation } from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceInformation.js';
-import { Artifact_IOuterSpaceFleetsCommit } from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceFleetsCommit.js';
-import { Artifact_IOuterSpaceFleetsReveal } from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceFleetsReveal.js';
-import { Artifact_IOuterSpaceStaking } from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceStaking.js';
+import {createPublicClient, createWalletClient, http} from 'viem';
+import {privateKeyToAccount} from 'viem/accounts';
+import type {Chain, Address, PublicClient, WalletClient} from 'viem';
+import {Artifact_IOuterSpaceInformation} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceInformation.js';
+import {Artifact_IOuterSpaceFleetsCommit} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceFleetsCommit.js';
+import {Artifact_IOuterSpaceFleetsReveal} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceFleetsReveal.js';
+import {Artifact_IOuterSpaceStaking} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceStaking.js';
 
-type IOuterSpaceInformation = typeof Artifact_IOuterSpaceInformation['abi'];
-type IOuterSpaceFleetsCommit = typeof Artifact_IOuterSpaceFleetsCommit['abi'];
-type IOuterSpaceFleetsReveal = typeof Artifact_IOuterSpaceFleetsReveal['abi'];
-type IOuterSpaceStaking = typeof Artifact_IOuterSpaceStaking['abi'];
+type IOuterSpaceInformation = (typeof Artifact_IOuterSpaceInformation)['abi'];
+type IOuterSpaceFleetsCommit = (typeof Artifact_IOuterSpaceFleetsCommit)['abi'];
+type IOuterSpaceFleetsReveal = (typeof Artifact_IOuterSpaceFleetsReveal)['abi'];
+type IOuterSpaceStaking = (typeof Artifact_IOuterSpaceStaking)['abi'];
 
 export function createContractClients(
 	chain: Chain,

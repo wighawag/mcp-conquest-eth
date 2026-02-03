@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { PlanetManager } from '../planet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {PlanetManager} from '../planet/manager.js';
 
 /**
  * Create the getPlanetsAround tool
@@ -18,11 +18,11 @@ export function createGetPlanetsAroundTool(planetManager: PlanetManager): Tool {
 		}),
 		async execute(args) {
 			try {
-				const { centerPlanetId, radius } = args;
+				const {centerPlanetId, radius} = args;
 
 				// Get center planet info to get its coordinates
 				const centerPlanet = planetManager.getPlanetInfo(
-					typeof centerPlanetId === 'string' ? BigInt(centerPlanetId) : BigInt(centerPlanetId)
+					typeof centerPlanetId === 'string' ? BigInt(centerPlanetId) : BigInt(centerPlanetId),
 				);
 
 				if (!centerPlanet) {
@@ -36,7 +36,7 @@ export function createGetPlanetsAroundTool(planetManager: PlanetManager): Tool {
 										error: `Planet ${centerPlanetId} not found`,
 									},
 									null,
-									2
+									2,
 								),
 							},
 						],
@@ -47,7 +47,7 @@ export function createGetPlanetsAroundTool(planetManager: PlanetManager): Tool {
 				const planets = await planetManager.getPlanetsAround(
 					centerPlanet.location.x,
 					centerPlanet.location.y,
-					radius
+					radius,
 				);
 
 				return {
@@ -63,11 +63,11 @@ export function createGetPlanetsAroundTool(planetManager: PlanetManager): Tool {
 										y: centerPlanet.location.y,
 									},
 									radius,
-									planets: planets.map(({ info, state }) => ({
+									planets: planets.map(({info, state}) => ({
 										planetId: info.location.id.toString(),
 										distance: planetManager.calculateDistance(
 											centerPlanet.location.id,
-											info.location.id
+											info.location.id,
 										),
 										owner: state?.owner || null,
 										location: {
@@ -79,7 +79,7 @@ export function createGetPlanetsAroundTool(planetManager: PlanetManager): Tool {
 									})),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -95,7 +95,7 @@ export function createGetPlanetsAroundTool(planetManager: PlanetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

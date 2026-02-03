@@ -1,6 +1,6 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { FleetManager } from '../fleet/manager.js';
+import type {Tool} from '@modelcontextprotocol/sdk/types.js';
+import {z} from 'zod';
+import {FleetManager} from '../fleet/manager.js';
 
 /**
  * Create the sendFleet tool
@@ -21,7 +21,9 @@ export function createSendFleetTool(fleetManager: FleetManager): Tool {
 			arrivalTimeWanted: z
 				.number()
 				.optional()
-				.describe('Desired arrival time (timestamp in seconds). If not specified, will be calculated based on distance.'),
+				.describe(
+					'Desired arrival time (timestamp in seconds). If not specified, will be calculated based on distance.',
+				),
 			gift: z
 				.boolean()
 				.optional()
@@ -36,17 +38,18 @@ export function createSendFleetTool(fleetManager: FleetManager): Tool {
 		}),
 		async execute(args) {
 			try {
-				const { fromPlanetId, toPlanetId, quantity, arrivalTimeWanted, gift, specific } = args;
+				const {fromPlanetId, toPlanetId, quantity, arrivalTimeWanted, gift, specific} = args;
 
 				const result = await fleetManager.send(
 					typeof fromPlanetId === 'string' ? BigInt(fromPlanetId) : BigInt(fromPlanetId),
 					typeof toPlanetId === 'string' ? BigInt(toPlanetId) : BigInt(toPlanetId),
 					quantity,
 					{
-						arrivalTimeWanted: typeof arrivalTimeWanted === 'undefined' ? undefined : BigInt(arrivalTimeWanted),
+						arrivalTimeWanted:
+							typeof arrivalTimeWanted === 'undefined' ? undefined : BigInt(arrivalTimeWanted),
 						gift,
 						specific: specific as `0x${string}`,
-					}
+					},
 				);
 
 				return {
@@ -64,7 +67,7 @@ export function createSendFleetTool(fleetManager: FleetManager): Tool {
 									secret: result.secret,
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],
@@ -80,7 +83,7 @@ export function createSendFleetTool(fleetManager: FleetManager): Tool {
 									error: error instanceof Error ? error.message : String(error),
 								},
 								null,
-								2
+								2,
 							),
 						},
 					],

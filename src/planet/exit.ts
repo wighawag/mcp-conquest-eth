@@ -1,12 +1,12 @@
-import type { Address } from 'viem';
-import type { WalletClient } from 'viem';
-import type { PendingExit } from '../types/planet.js';
-import { getCurrentTimestamp } from '../util/time.js';
-import type { FleetStorage } from '../storage/interface.js';
+import type {Address} from 'viem';
+import type {WalletClient} from 'viem';
+import type {PendingExit} from '../types/planet.js';
+import {getCurrentTimestamp} from '../util/time.js';
+import type {FleetStorage} from '../storage/interface.js';
 
 /**
  * Exit (unstake) multiple planets
- * 
+ *
  * @param walletClient - Viem wallet client for signing transactions
  * @param contractAddress - The game contract address
  * @param contractAbi - The contract ABI
@@ -23,19 +23,19 @@ export async function exitPlanets(
 	owner: Address,
 	planetIds: bigint[],
 	exitDuration: bigint,
-	storage: FleetStorage
-): Promise<{ hash: `0x${string}`; exitsInitiated: bigint[] }> {
+	storage: FleetStorage,
+): Promise<{hash: `0x${string}`; exitsInitiated: bigint[]}> {
 	const operator = walletClient.account!.address;
 	const currentTime = getCurrentTimestamp();
 
 	// Get planet states to verify ownership
 	const publicClient = walletClient as any;
-	const states = await publicClient.readContract({
+	const states = (await publicClient.readContract({
 		address: contractAddress,
 		abi: contractAbi,
 		functionName: 'getPlanetStates',
 		args: [planetIds],
-	}) as Array<{
+	})) as Array<{
 		owner: Address;
 		numSpaceships: number;
 		// ... other fields
@@ -79,5 +79,5 @@ export async function exitPlanets(
 	// Send the transaction
 	const hash = await walletClient.writeContract(request);
 
-	return { hash, exitsInitiated };
+	return {hash, exitsInitiated};
 }

@@ -1,9 +1,9 @@
-import { promises as fs } from 'fs';
+import {promises as fs} from 'fs';
 import path from 'path';
-import type { Address } from 'viem';
-import type { FleetStorage } from './interface.js';
-import type { PendingFleet } from '../types/fleet.js';
-import type { PendingExit } from '../types/planet.js';
+import type {Address} from 'viem';
+import type {FleetStorage} from './interface.js';
+import type {PendingFleet} from '../types/fleet.js';
+import type {PendingExit} from '../types/planet.js';
 
 interface StorageData {
 	fleets: Record<string, PendingFleet>;
@@ -17,7 +17,7 @@ export class JsonFleetStorage implements FleetStorage {
 
 	constructor(dataDir: string = './data') {
 		this.dataPath = path.join(dataDir, 'conquest-data.json');
-		this.data = { fleets: {}, exits: {} };
+		this.data = {fleets: {}, exits: {}};
 	}
 
 	async initialize(): Promise<void> {
@@ -26,7 +26,7 @@ export class JsonFleetStorage implements FleetStorage {
 		}
 		// Load from disk or create new
 		try {
-			await fs.mkdir(path.dirname(this.dataPath), { recursive: true });
+			await fs.mkdir(path.dirname(this.dataPath), {recursive: true});
 			const content = await fs.readFile(this.dataPath, 'utf-8');
 			this.data = JSON.parse(content);
 			// Convert BigInt strings back to BigInt
@@ -149,7 +149,11 @@ export class JsonFleetStorage implements FleetStorage {
 		}
 	}
 
-	async markExitInterrupted(planetId: bigint, interruptedAt: number, newOwner: Address): Promise<void> {
+	async markExitInterrupted(
+		planetId: bigint,
+		interruptedAt: number,
+		newOwner: Address,
+	): Promise<void> {
 		await this.ensureInitialized();
 		const exit = this.data.exits[planetId.toString()];
 		if (exit) {

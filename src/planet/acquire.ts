@@ -1,9 +1,9 @@
-import type { Address } from 'viem';
-import type { WalletClient } from 'viem';
+import type {Address} from 'viem';
+import type {WalletClient} from 'viem';
 
 /**
  * Acquire (stake) multiple planets
- * 
+ *
  * @param walletClient - Viem wallet client for signing transactions
  * @param contractAddress - The game contract address
  * @param contractAbi - The contract ABI
@@ -18,8 +18,8 @@ export async function acquirePlanets(
 	contractAbi: readonly unknown[],
 	planetIds: bigint[],
 	amountToMint: number,
-	tokenAmount: number
-): Promise<{ hash: `0x${string}`; planetsAcquired: bigint[] }> {
+	tokenAmount: number,
+): Promise<{hash: `0x${string}`; planetsAcquired: bigint[]}> {
 	const sender = walletClient.account!.address;
 
 	// Get the contract acquireMultipleViaNativeTokenAndStakingToken function signature
@@ -36,5 +36,5 @@ export async function acquirePlanets(
 	// Send the transaction
 	const hash = await walletClient.writeContract(request);
 
-	return { hash, planetsAcquired: planetIds };
+	return {hash, planetsAcquired: planetIds};
 }
