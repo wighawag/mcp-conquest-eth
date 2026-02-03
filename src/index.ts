@@ -123,7 +123,8 @@ export function createServer(
 	const ensureManagersInitialized = async () => {
 		const {spaceInfo: si, contractConfig: cc} = await initSpaceInfo();
 
-		if (!fleetManager && walletClient && si && cc) {
+		// Initialize fleetManager even without walletClient for read-only operations
+		if (!fleetManager && si && cc) {
 			fleetManager = new FleetManager(
 				walletClient as any, // Type assertion due to viem version compatibility between mcp-ethereum and viem
 				contractClients.fleetsCommitContract,
@@ -135,7 +136,8 @@ export function createServer(
 			);
 		}
 
-		if (!planetManager && walletClient && si && cc) {
+		// Initialize planetManager even without walletClient for read-only operations
+		if (!planetManager && si && cc) {
 			planetManager = new PlanetManager(
 				walletClient as any, // Type assertion due to viem version compatibility between mcp-ethereum and viem
 				contractClients.stakingContract,

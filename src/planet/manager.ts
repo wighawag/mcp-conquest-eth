@@ -15,7 +15,7 @@ import type {ContractConfig} from '../types.js';
  */
 export class PlanetManager {
 	constructor(
-		private readonly walletClient: WalletClient,
+		private readonly walletClient: WalletClient | undefined,
 		private readonly stakingContract: {
 			address: Address;
 			abi: readonly unknown[];
@@ -34,6 +34,16 @@ export class PlanetManager {
 	) {}
 
 	/**
+	 * Ensure walletClient is available for operations that require it
+	 */
+	private requireWalletClient(): WalletClient {
+		if (!this.walletClient) {
+			throw new Error('Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.');
+		}
+		return this.walletClient;
+	}
+
+	/**
 	 * Acquire (stake) multiple planets
 	 */
 	async acquire(
@@ -42,7 +52,7 @@ export class PlanetManager {
 		tokenAmount: number,
 	): Promise<{hash: `0x${string}`; planetsAcquired: bigint[]}> {
 		return acquirePlanets(
-			this.walletClient,
+			this.requireWalletClient(),
 			this.stakingContract.address as Address,
 			this.stakingContract.abi,
 			planetIds,
@@ -58,9 +68,9 @@ export class PlanetManager {
 		planetIds: bigint[],
 		owner?: Address,
 	): Promise<{hash: `0x${string}`; exitsInitiated: bigint[]}> {
-		const exitOwner = owner || this.walletClient.account!.address;
+		const exitOwner = owner || this.requireWalletClient().account!.address;
 		return exitPlanets(
-			this.walletClient,
+			this.requireWalletClient(),
 			this.stakingContract.address as Address,
 			this.stakingContract.abi,
 			exitOwner,
@@ -117,7 +127,7 @@ export class PlanetManager {
 	async getMyPlanets(
 		radius: number = 100,
 	): Promise<Array<{info: PlanetInfo; state: ExternalPlanet}>> {
-		const sender = this.walletClient.account!.address;
+		const sender = this.requireWalletClient().account!.address;
 
 		// For now, use a simple approach: get all planets in area and filter by owner
 		// A better approach would be to use an index or The Graph
@@ -149,7 +159,7 @@ export class PlanetManager {
 	 * Get pending exits for the current player
 	 */
 	async getMyPendingExits(): Promise<PendingExit[]> {
-		const sender = this.walletClient.account!.address;
+		const sender = this.requireWalletClient().account!.address;
 		return this.storage.getPendingExitsByPlayer(sender as Address);
 	}
 

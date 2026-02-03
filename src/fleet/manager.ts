@@ -13,7 +13,7 @@ import type {ContractConfig} from '../types.js';
  */
 export class FleetManager {
 	constructor(
-		private readonly walletClient: WalletClient,
+		private readonly walletClient: WalletClient | undefined,
 		private readonly fleetsCommitContract: {
 			address: Address;
 			abi: readonly unknown[];
@@ -33,6 +33,16 @@ export class FleetManager {
 	) {}
 
 	/**
+	 * Ensure walletClient is available for operations that require it
+	 */
+	private requireWalletClient(): WalletClient {
+		if (!this.walletClient) {
+			throw new Error('Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.');
+		}
+		return this.walletClient;
+	}
+
+	/**
 	 * Send a fleet to a destination planet
 	 */
 	async send(
@@ -47,7 +57,7 @@ export class FleetManager {
 		},
 	): Promise<PendingFleet> {
 		return sendFleet(
-			this.walletClient,
+			this.requireWalletClient(),
 			this.contractAddress,
 			this.fleetsCommitContract,
 			fromPlanetId,
@@ -77,7 +87,7 @@ export class FleetManager {
 		},
 	): Promise<PendingFleet> {
 		return sendFleetFor(
-			this.walletClient,
+			this.requireWalletClient(),
 			this.contractAddress,
 			this.fleetsCommitContract,
 			fleetSender,
@@ -99,7 +109,7 @@ export class FleetManager {
 		fleetId: string,
 	): Promise<{resolved: true; fleet: PendingFleet} | {resolved: false; reason: string}> {
 		return resolveFleetWithSpaceInfo(
-			this.walletClient,
+			this.requireWalletClient(),
 			this.fleetsRevealContract,
 			this.spaceInfo,
 			fleetId,
@@ -118,7 +128,7 @@ export class FleetManager {
 	 * Get all pending fleets for the current sender
 	 */
 	async getMyPendingFleets(): Promise<PendingFleet[]> {
-		const sender = this.walletClient.account!.address;
+		const sender = this.requireWalletClient().account!.address;
 		return this.storage.getPendingFleetsBySender(sender);
 	}
 
