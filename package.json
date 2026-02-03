@@ -41,6 +41,7 @@
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.25.3",
 		"commander": "^14.0.3",
+		"conquest-eth-v0-contracts": "workspace:*",
 		"eip-1193": "^0.6.5",
 		"mcp-ethereum": "^0.0.3",
 		"remote-procedure-call": "^0.1.1",

@@ -1,0 +1,3 @@
+packages:
+  - '.'
+  - 'conquest-eth-v0-contracts'

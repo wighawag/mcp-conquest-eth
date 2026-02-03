@@ -12,11 +12,19 @@ program
 	.description(pkg.description)
 	.version(pkg.version)
 	.option('--rpc-url <url>', 'RPC URL for the Ethereum network', '')
-	.option('--ethereum', 'Wether to also provide mcp-ethereum tools', '')
+	.option('--ethereum', 'Whether to also provide mcp-ethereum tools', '')
 	.option('--game-contract <address>', 'Contract address of the game', '')
+	.option('--storage <type>', 'Storage backend: json or sqlite', 'json')
+	.option('--storage-path <path>', 'Path to storage directory', './data')
 	.parse(process.argv);
 
-const options: {rpcUrl?: string; ethereum?: boolean; gameContract?: `0x${string}`} = program.opts();
+const options: {
+	rpcUrl?: string;
+	ethereum?: boolean;
+	gameContract?: `0x${string}`;
+	storage?: string;
+	storagePath?: string;
+} = program.opts();
 
 const privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) {
@@ -47,6 +55,10 @@ const server = createServer(
 	},
 	{
 		ethereum: options.ethereum,
+		storageConfig: {
+			type: (options.storage as 'json' | 'sqlite') || 'json',
+			dataDir: options.storagePath,
+		},
 	},
 );
 await server.connect(transport);
