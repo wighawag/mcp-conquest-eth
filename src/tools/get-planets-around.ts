@@ -12,38 +12,15 @@ export async function handleGetPlanetsAround(
 ): Promise<CallToolResult> {
 	try {
 		const parsed = z.object({
-			centerPlanetId: z.union([z.string(), z.number()]),
+			centerX: z.number(),
+			centerY: z.number(),
 			radius: z.number(),
 		}).parse(args);
-		const {centerPlanetId, radius} = parsed;
-
-		// Get center planet info to get its coordinates
-		const centerPlanet = planetManager.getPlanetInfo(
-			typeof centerPlanetId === 'string' ? BigInt(centerPlanetId) : BigInt(centerPlanetId)
-		);
-
-		if (!centerPlanet) {
-			return {
-				content: [
-					{
-						type: 'text',
-						text: JSON.stringify(
-							{
-								success: false,
-								error: `Planet ${centerPlanetId} not found`,
-							},
-							null,
-							2
-						),
-					},
-				],
-				isError: true,
-			};
-		}
+		const {centerX, centerY, radius} = parsed;
 
 		const planets = await planetManager.getPlanetsAround(
-			centerPlanet.location.x,
-			centerPlanet.location.y,
+			centerX,
+			centerY,
 			radius
 		);
 
@@ -55,16 +32,14 @@ export async function handleGetPlanetsAround(
 						{
 							success: true,
 							center: {
-								planetId: centerPlanet.location.id.toString(),
-								x: centerPlanet.location.x,
-								y: centerPlanet.location.y,
+								x: centerX,
+								y: centerY,
 							},
 							radius,
 							planets: planets.map(({info, state}) => ({
 								planetId: info.location.id.toString(),
-								distance: planetManager.calculateDistance(
-									centerPlanet.location.id,
-									info.location.id
+								distance: Math.sqrt(
+									Math.pow(info.location.x - centerX, 2) + Math.pow(info.location.y - centerY, 2)
 								),
 								owner: state?.owner || null,
 								location: {
@@ -104,6 +79,7 @@ export async function handleGetPlanetsAround(
  * Tool schema for getting planets around (ZodRawShapeCompat format)
  */
 export const getPlanetsAroundSchema = {
-	centerPlanetId: z.union([z.string(), z.number()]).describe('Center planet location ID (as hex string or number)'),
-	radius: z.number().describe('Radius in distance units to search around the center planet'),
+	centerX: z.number().describe('X coordinate of the center point'),
+	centerY: z.number().describe('Y coordinate of the center point'),
+	radius: z.number().describe('Radius in distance units to search around the center point'),
 };
