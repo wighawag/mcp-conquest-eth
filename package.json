@@ -1,7 +1,7 @@
 {
-	"name": "mcp-conquest-eth",
+	"name": "mcp-conquest-eth-v0",
 	"version": "0.0.0",
-	"description": "MCP for Conquest.eth",
+	"description": "MCP for Conquest.eth v0",
 	"author": "Ronan Sandford",
 	"license": "MIT",
 	"keywords": [
