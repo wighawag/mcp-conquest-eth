@@ -5,11 +5,7 @@ import {Artifact_IOuterSpaceInformation} from '../../conquest-eth-v0-contracts/g
 import {Artifact_IOuterSpaceFleetsCommit} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceFleetsCommit.js';
 import {Artifact_IOuterSpaceFleetsReveal} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceFleetsReveal.js';
 import {Artifact_IOuterSpaceStaking} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceStaking.js';
-
-type IOuterSpaceInformation = (typeof Artifact_IOuterSpaceInformation)['abi'];
-type IOuterSpaceFleetsCommit = (typeof Artifact_IOuterSpaceFleetsCommit)['abi'];
-type IOuterSpaceFleetsReveal = (typeof Artifact_IOuterSpaceFleetsReveal)['abi'];
-type IOuterSpaceStaking = (typeof Artifact_IOuterSpaceStaking)['abi'];
+import {Abi_IOuterSpace} from '../../conquest-eth-v0-contracts/generated/abis/IOuterSpace.js';
 
 export function createContractClients(
 	chain: Chain,
@@ -21,25 +17,25 @@ export function createContractClients(
 	walletClient: WalletClient | undefined;
 	infoContract: {
 		address: Address;
-		abi: IOuterSpaceInformation;
+		abi: Abi_IOuterSpace;
 		publicClient: PublicClient;
 		walletClient: WalletClient | undefined;
 	};
 	fleetsCommitContract: {
 		address: Address;
-		abi: IOuterSpaceFleetsCommit;
+		abi: Abi_IOuterSpace;
 		publicClient: PublicClient;
 		walletClient: WalletClient | undefined;
 	};
 	fleetsRevealContract: {
 		address: Address;
-		abi: IOuterSpaceFleetsReveal;
+		abi: Abi_IOuterSpace;
 		publicClient: PublicClient;
 		walletClient: WalletClient | undefined;
 	};
 	stakingContract: {
 		address: Address;
-		abi: IOuterSpaceStaking;
+		abi: Abi_IOuterSpace;
 		publicClient: PublicClient;
 		walletClient: WalletClient | undefined;
 	};
@@ -62,28 +58,28 @@ export function createContractClients(
 	// Create contract instances
 	const infoContract = {
 		address: gameContract,
-		abi: Artifact_IOuterSpaceInformation.abi as IOuterSpaceInformation,
+		abi: Artifact_IOuterSpaceInformation.abi as unknown as Abi_IOuterSpace,
 		publicClient,
 		walletClient,
 	};
 
 	const fleetsCommitContract = {
 		address: gameContract,
-		abi: Artifact_IOuterSpaceFleetsCommit.abi as IOuterSpaceFleetsCommit,
+		abi: Artifact_IOuterSpaceFleetsCommit.abi as unknown as Abi_IOuterSpace,
 		publicClient,
 		walletClient,
 	};
 
 	const fleetsRevealContract = {
 		address: gameContract,
-		abi: Artifact_IOuterSpaceFleetsReveal.abi as IOuterSpaceFleetsReveal,
+		abi: Artifact_IOuterSpaceFleetsReveal.abi as unknown as Abi_IOuterSpace,
 		publicClient,
 		walletClient,
 	};
 
 	const stakingContract = {
 		address: gameContract,
-		abi: Artifact_IOuterSpaceStaking.abi as IOuterSpaceStaking,
+		abi: Artifact_IOuterSpaceStaking.abi as unknown as Abi_IOuterSpace,
 		publicClient,
 		walletClient,
 	};

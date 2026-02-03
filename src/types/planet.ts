@@ -3,23 +3,31 @@ import type {PlanetInfo} from '../../conquest-eth-v0-contracts/js/index.js';
 
 // ExternalPlanet is the contract return type from getPlanetStates
 export interface ExternalPlanet {
-	owner?: Address;
-	ownerYakuzaSubscriptionEndTime: number;
-	lastUpdatedSaved: number;
-	startExitTime: number;
+	// owner?: Address;
+	// ownerYakuzaSubscriptionEndTime: number;
+	// lastUpdatedSaved: number;
+	// startExitTime: number;
+	// numSpaceships: number;
+	// flagTime: number;
+	// travelingUpkeep: number;
+	// overflow: number;
+	// active: boolean;
+	// exiting: boolean;
+	// exitTimeLeft: number;
+	// natives: boolean;
+	// capturing: boolean;
+	// inReach: boolean;
+	// rewardGiver: Address;
+	// requireClaimAcknowledgement?: Address;
+	// metadata: Record<string, string | number | boolean>;
+	owner: `0x${string}`;
+	ownershipStartTime: number;
+	exitStartTime: number;
 	numSpaceships: number;
-	flagTime: number;
-	travelingUpkeep: number;
 	overflow: number;
+	lastUpdated: number;
 	active: boolean;
-	exiting: boolean;
-	exitTimeLeft: number;
-	natives: boolean;
-	capturing: boolean;
-	inReach: boolean;
-	rewardGiver: Address;
-	requireClaimAcknowledgement?: Address;
-	metadata: Record<string, string | number | boolean>;
+	reward: bigint;
 }
 
 export interface PendingExit {

@@ -1,13 +1,15 @@
-import type {Address} from 'viem';
+import {zeroAddress, type Address, type PublicClient} from 'viem';
 import type {WalletClient} from 'viem';
 import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
-import type {PlanetInfo} from '../../conquest-eth-v0-contracts/js/types.js';
+import type {PlanetInfo, PlanetState} from '../../conquest-eth-v0-contracts/js/types.js';
 import type {ExternalPlanet} from '../types/planet.js';
 import type {PendingExit} from '../types/planet.js';
 import {acquirePlanets} from './acquire.js';
 import {exitPlanets} from './exit.js';
 import type {FleetStorage} from '../storage/interface.js';
 import type {ContractConfig} from '../types.js';
+import {Abi_IOuterSpace} from '../../conquest-eth-v0-contracts/generated/abis/IOuterSpace.js';
+import {meta} from 'zod/v4/core';
 
 /**
  * PlanetManager manages planet-related operations in the Conquest game
@@ -24,8 +26,8 @@ export class PlanetManager {
 		},
 		private readonly infoContract: {
 			address: Address;
-			abi: readonly unknown[];
-			publicClient: unknown;
+			abi: Abi_IOuterSpace;
+			publicClient: PublicClient;
 			walletClient: WalletClient | undefined;
 		},
 		private readonly spaceInfo: SpaceInfo,
@@ -103,7 +105,7 @@ export class PlanetManager {
 		centerX: number,
 		centerY: number,
 		radius: number,
-	): Promise<{info: PlanetInfo; state?: ExternalPlanet}[]> {
+	): Promise<{info: PlanetInfo; state?: PlanetState}[]> {
 		// Get planet infos from SpaceInfo within the bounding box
 		const planetsInRect: PlanetInfo[] = [];
 		for (const planet of this.spaceInfo.yieldPlanetsFromRect(
@@ -123,12 +125,12 @@ export class PlanetManager {
 
 		// Batch query contract for planet states
 		const planetIds = planetsInRect.map((p) => p.location.id);
-		const result = (await (this.infoContract.publicClient as any).readContract({
+		const result = await this.infoContract.publicClient.readContract({
 			address: this.infoContract.address as Address,
 			abi: this.infoContract.abi,
 			functionName: 'getPlanetStates',
 			args: [planetIds],
-		})) as [ExternalPlanet[], {minX: number; minY: number; maxX: number; maxY: number}];
+		});
 
 		const states = result[0];
 
@@ -140,7 +142,24 @@ export class PlanetManager {
 			const rawState = states[index];
 			if (rawState) {
 				// Create a mutable copy of the state to compute updates
-				const stateCopy: any = {...rawState};
+				const stateCopy = {
+					owner: rawState.owner === zeroAddress ? undefined : rawState.owner,
+					ownerYakuzaSubscriptionEndTime: 0, // TODO
+					lastUpdatedSaved: rawState.lastUpdated,
+					startExitTime: rawState.exitStartTime,
+					numSpaceships: rawState.numSpaceships,
+					flagTime: 0, // TODO
+					travelingUpkeep: 0, // TODO
+					overflow: 0, // TODO
+					active: rawState.active,
+					exiting: false, // will be populated
+					exitTimeLeft: 0, // will be populated
+					natives: false, // will be populated
+					capturing: false, // will be populated
+					inReach: false, // will be populated
+					rewardGiver: '', // will be populated
+					metadata: {},
+				};
 				// Compute the latest state using SpaceInfo
 				this.spaceInfo.computePlanetUpdateForTimeElapsed(stateCopy, planet, currentTime);
 				return {
