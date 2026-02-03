@@ -38,7 +38,9 @@ export class PlanetManager {
 	 */
 	private requireWalletClient(): WalletClient {
 		if (!this.walletClient) {
-			throw new Error('Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.');
+			throw new Error(
+				'Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.',
+			);
 		}
 		return this.walletClient;
 	}
@@ -102,8 +104,8 @@ export class PlanetManager {
 		centerY: number,
 		radius: number,
 	): Promise<{info: PlanetInfo; state?: ExternalPlanet}[]> {
-		// Get planet infos from SpaceInfo
-		const planets = [];
+		// Get planet infos from SpaceInfo within the bounding box
+		const planetsInRect: PlanetInfo[] = [];
 		for (const planet of this.spaceInfo.yieldPlanetsFromRect(
 			centerX - radius,
 			centerY - radius,
@@ -115,10 +117,42 @@ export class PlanetManager {
 			const dy = planet.location.y - centerY;
 			const distance = Math.sqrt(dx * dx + dy * dy);
 			if (distance <= radius) {
-				planets.push({info: planet});
+				planetsInRect.push(planet);
 			}
 		}
-		return planets;
+
+		// Batch query contract for planet states
+		const planetIds = planetsInRect.map((p) => p.location.id);
+		const result = (await (this.infoContract.publicClient as any).readContract({
+			address: this.infoContract.address as Address,
+			abi: this.infoContract.abi,
+			functionName: 'getPlanetStates',
+			args: [planetIds],
+		})) as [ExternalPlanet[], {minX: number; minY: number; maxX: number; maxY: number}];
+
+		const states = result[0];
+
+		// Get current time for computing latest state
+		const currentTime = Math.floor(Date.now() / 1000);
+
+		// Combine info with states and compute latest state
+		return planetsInRect.map((planet, index) => {
+			const rawState = states[index];
+			if (rawState) {
+				// Create a mutable copy of the state to compute updates
+				const stateCopy: any = {...rawState};
+				// Compute the latest state using SpaceInfo
+				this.spaceInfo.computePlanetUpdateForTimeElapsed(stateCopy, planet, currentTime);
+				return {
+					info: planet,
+					state: stateCopy,
+				};
+			}
+			return {
+				info: planet,
+				state: undefined,
+			};
+		});
 	}
 
 	/**
@@ -131,24 +165,35 @@ export class PlanetManager {
 
 		// For now, use a simple approach: get all planets in area and filter by owner
 		// A better approach would be to use an index or The Graph
-		const myPlanets: Array<{info: PlanetInfo; state: ExternalPlanet}> = [];
+		const planetsInRect: PlanetInfo[] = [];
 
 		// Get planets from 0,0 out to radius
 		for (const planet of this.spaceInfo.yieldPlanetsFromRect(-radius, -radius, radius, radius)) {
-			// Query contract for planet state
-			const states = (await (this.infoContract.publicClient as any).readContract({
-				address: this.infoContract.address as Address,
-				abi: this.infoContract.abi,
-				functionName: 'getPlanetStates',
-				args: [[planet.location.id]],
-			})) as ExternalPlanet[];
+			planetsInRect.push(planet);
+		}
 
-			if (
-				states.length > 0 &&
-				states[0].owner &&
-				states[0].owner.toLowerCase() === sender.toLowerCase()
-			) {
-				myPlanets.push({info: planet, state: states[0]});
+		// Batch query contract for planet states
+		const planetIds = planetsInRect.map((p) => p.location.id);
+		const states = (await (this.infoContract.publicClient as any).readContract({
+			address: this.infoContract.address as Address,
+			abi: this.infoContract.abi,
+			functionName: 'getPlanetStates',
+			args: [planetIds],
+		})) as ExternalPlanet[];
+
+		// Get current time for computing latest state
+		const currentTime = Math.floor(Date.now() / 1000);
+
+		// Filter by owner and compute latest state
+		const myPlanets: Array<{info: PlanetInfo; state: ExternalPlanet}> = [];
+		for (let i = 0; i < planetsInRect.length; i++) {
+			const rawState = states[i];
+			if (rawState && rawState.owner && rawState.owner.toLowerCase() === sender.toLowerCase()) {
+				// Create a mutable copy of the state to compute updates
+				const stateCopy: any = {...rawState};
+				// Compute the latest state using SpaceInfo
+				this.spaceInfo.computePlanetUpdateForTimeElapsed(stateCopy, planetsInRect[i], currentTime);
+				myPlanets.push({info: planetsInRect[i], state: stateCopy});
 			}
 		}
 

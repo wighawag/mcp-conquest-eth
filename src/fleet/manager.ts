@@ -37,7 +37,9 @@ export class FleetManager {
 	 */
 	private requireWalletClient(): WalletClient {
 		if (!this.walletClient) {
-			throw new Error('Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.');
+			throw new Error(
+				'Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.',
+			);
 		}
 		return this.walletClient;
 	}
