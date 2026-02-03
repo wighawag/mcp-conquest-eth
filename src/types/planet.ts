@@ -1,5 +1,5 @@
 import type {Address} from 'viem';
-import type {PlanetInfo} from 'conquest-eth-v0-contracts/js/index.js';
+import type {PlanetInfo} from '../../conquest-eth-v0-contracts/js/index.js';
 
 // ExternalPlanet is the contract return type from getPlanetStates
 export interface ExternalPlanet {
