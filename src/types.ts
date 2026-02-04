@@ -1,16 +1,26 @@
-import type {PublicClient, WalletClient} from 'viem';
+import type {Address, PublicClient, WalletClient} from 'viem';
 import type {PlanetInfo} from '../conquest-eth-v0-contracts/js/index.js';
+import type {Abi_IOuterSpace} from '../conquest-eth-v0-contracts/generated/abis/IOuterSpace.js';
 
 export interface StorageConfig {
 	type: 'json' | 'sqlite';
 	dataDir?: string; // Default: `${cwd}/data`
 }
 
-export interface ContractClients {
-	publicClient: PublicClient;
+export type GameContract = {
+	address: Address;
+	abi: Abi_IOuterSpace;
+};
+
+export type ClientsWithOptionalWallet = {
 	walletClient?: WalletClient;
-	gameContract: `0x${string}`;
-}
+	publicClient: PublicClient;
+};
+
+export type Clients = {
+	walletClient: WalletClient;
+	publicClient: PublicClient;
+};
 
 export interface ContractConfig {
 	genesis: bigint;

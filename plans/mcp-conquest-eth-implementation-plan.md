@@ -349,7 +349,7 @@ import {
 export function createContractClients(
   chain: Chain,
   rpcUrl: string,
-  gameContract: Address,
+  gameContractAddress: Address,
   privateKey?: Address
 ) {
   const transport = http(rpcUrl);
@@ -367,30 +367,9 @@ export function createContractClients(
       })
     : undefined;
 
-  // Create contract instances
-  const infoContract = {
-    address: gameContract,
-    abi: IOuterSpaceInformation,
-    publicClient,
-    walletClient,
-  };
-
-  const fleetsCommitContract = {
-    address: gameContract,
-    abi: IOuterSpaceFleetsCommit,
-    publicClient,
-    walletClient,
-  };
-
-  const fleetsRevealContract = {
-    address: gameContract,
-    abi: IOuterSpaceFleetsReveal,
-    publicClient,
-    walletClient,
-  };
-
-  const stakingContract = {
-    address: gameContract,
+  
+  const gameCpmtract = {
+    address: gameContractAddress,
     abi: IOuterSpaceStaking,
     publicClient,
     walletClient,
@@ -399,10 +378,7 @@ export function createContractClients(
   return {
     publicClient,
     walletClient,
-    infoContract,
-    fleetsCommitContract,
-    fleetsRevealContract,
-    stakingContract,
+    gameContract,
   };
 }
 ```

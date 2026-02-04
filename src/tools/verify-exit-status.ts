@@ -7,17 +7,18 @@ import {PlanetManager} from '../planet/manager.js';
  */
 export async function handleVerifyExitStatus(
 	args: unknown,
-	_extra: unknown,
-	planetManager: PlanetManager
+	planetManager: PlanetManager,
 ): Promise<CallToolResult> {
 	try {
-		const parsed = z.object({
-			planetId: z.union([z.string(), z.number()]),
-		}).parse(args);
+		const parsed = z
+			.object({
+				planetId: z.union([z.string(), z.number()]),
+			})
+			.parse(args);
 		const {planetId} = parsed;
 
 		const result = await planetManager.verifyExitStatus(
-			typeof planetId === 'string' ? BigInt(planetId) : BigInt(planetId)
+			typeof planetId === 'string' ? BigInt(planetId) : BigInt(planetId),
 		);
 
 		// Calculate status based on exit state
@@ -42,7 +43,7 @@ export async function handleVerifyExitStatus(
 							exitCompleteTime: result.exit.exitCompleteTime,
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -58,7 +59,7 @@ export async function handleVerifyExitStatus(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -71,5 +72,7 @@ export async function handleVerifyExitStatus(
  * Tool schema for verifying exit status (ZodRawShapeCompat format)
  */
 export const verifyExitStatusSchema = {
-	planetId: z.union([z.string(), z.number()]).describe('Planet location ID to verify (as hex string or number)'),
+	planetId: z
+		.union([z.string(), z.number()])
+		.describe('Planet location ID to verify (as hex string or number)'),
 };

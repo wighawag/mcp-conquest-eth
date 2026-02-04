@@ -1,5 +1,4 @@
 import type {CallToolResult} from '@modelcontextprotocol/sdk/types.js';
-import {z} from 'zod';
 import {FleetManager} from '../fleet/manager.js';
 
 /**
@@ -7,8 +6,7 @@ import {FleetManager} from '../fleet/manager.js';
  */
 export async function handleGetPendingFleets(
 	_args: unknown,
-	_extra: unknown,
-	fleetManager: FleetManager
+	fleetManager: FleetManager,
 ): Promise<CallToolResult> {
 	try {
 		const fleets = await fleetManager.getMyPendingFleets();
@@ -38,7 +36,7 @@ export async function handleGetPendingFleets(
 							})),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -54,7 +52,7 @@ export async function handleGetPendingFleets(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],

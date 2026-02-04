@@ -7,13 +7,14 @@ import {PlanetManager} from '../planet/manager.js';
  */
 export async function handleGetMyPlanets(
 	args: unknown,
-	_extra: unknown,
-	planetManager: PlanetManager
+	planetManager: PlanetManager,
 ): Promise<CallToolResult> {
 	try {
-		const parsed = z.object({
-			radius: z.number().optional(),
-		}).parse(args);
+		const parsed = z
+			.object({
+				radius: z.number().optional(),
+			})
+			.parse(args);
 		const radius = parsed.radius ?? 100;
 		const planets = await planetManager.getMyPlanets(radius);
 
@@ -35,7 +36,7 @@ export async function handleGetMyPlanets(
 							})),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -51,7 +52,7 @@ export async function handleGetMyPlanets(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],

@@ -1,11 +1,10 @@
 import type {Address} from 'viem';
-import type {WalletClient} from 'viem';
 import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
-import type {PendingFleet} from '../types/fleet.js';
-import {computeToHash, computeFleetId, generateSecret} from '../util/hashing.js';
-import {calculateEstimatedArrivalTime, getCurrentTimestamp} from '../util/time.js';
 import type {FleetStorage} from '../storage/interface.js';
-import type {ContractConfig} from '../types.js';
+import type {Clients, ContractConfig, GameContract} from '../types.js';
+import type {PendingFleet} from '../types/fleet.js';
+import {computeFleetId, computeToHash, generateSecret} from '../util/hashing.js';
+import {calculateEstimatedArrivalTime, getCurrentTimestamp} from '../util/time.js';
 
 /**
  * Send a fleet to a destination planet
@@ -23,14 +22,8 @@ import type {ContractConfig} from '../types.js';
  * @returns The pending fleet information
  */
 export async function sendFleet(
-	walletClient: WalletClient,
-	contractAddress: Address,
-	fleetsCommitContract: {
-		address: Address;
-		abi: readonly unknown[];
-		publicClient: unknown;
-		walletClient: WalletClient | undefined;
-	},
+	clients: Clients,
+	gameContract: GameContract,
 	fromPlanetId: bigint,
 	toPlanetId: bigint,
 	quantity: number,
@@ -44,7 +37,7 @@ export async function sendFleet(
 		secret?: `0x${string}`;
 	},
 ): Promise<PendingFleet> {
-	const fleetSender = walletClient.account!.address;
+	const fleetSender = clients.walletClient.account!.address;
 	const operator = fleetSender; // Default to same address
 
 	// Get planet info for distance calculation
@@ -72,17 +65,16 @@ export async function sendFleet(
 	const toHash = computeToHash(toPlanetId, secret);
 
 	// Get the contract send function signature
-	const publicClient = fleetsCommitContract.publicClient as any;
-	const request = await publicClient.simulateContract({
-		address: fleetsCommitContract.address as Address,
-		abi: fleetsCommitContract.abi,
+	const simulation = await clients.publicClient.simulateContract({
+		address: gameContract.address,
+		abi: gameContract.abi,
 		functionName: 'send',
 		args: [fromPlanetId, quantity, toHash],
 		account: fleetSender,
 	});
 
 	// Send the transaction
-	const hash = await walletClient.writeContract(request);
+	const hash = await clients.walletClient.writeContract(simulation.request);
 
 	// Compute fleet ID
 	const fleetId = computeFleetId(toHash, fromPlanetId, fleetSender, operator);
@@ -128,14 +120,8 @@ export async function sendFleet(
  * @returns The pending fleet information
  */
 export async function sendFleetFor(
-	walletClient: WalletClient,
-	contractAddress: Address,
-	fleetsCommitContract: {
-		address: Address;
-		abi: readonly unknown[];
-		publicClient: unknown;
-		walletClient: WalletClient | undefined;
-	},
+	clients: Clients,
+	gameContract: GameContract,
 	fleetSender: Address,
 	fleetOwner: Address,
 	fromPlanetId: bigint,
@@ -151,7 +137,7 @@ export async function sendFleetFor(
 		secret?: `0x${string}`;
 	},
 ): Promise<PendingFleet> {
-	const operator = walletClient.account!.address;
+	const operator = clients.walletClient.account!.address;
 
 	// Get planet info for distance calculation
 	const fromPlanet = spaceInfo.getPlanetInfoViaId(fromPlanetId);
@@ -178,10 +164,9 @@ export async function sendFleetFor(
 	const toHash = computeToHash(toPlanetId, secret);
 
 	// Get the contract sendFor function signature
-	const publicClient = fleetsCommitContract.publicClient as any;
-	const request = await publicClient.simulateContract({
-		address: fleetsCommitContract.address as Address,
-		abi: fleetsCommitContract.abi,
+	const simulation = await clients.publicClient.simulateContract({
+		address: gameContract.address,
+		abi: gameContract.abi,
 		functionName: 'sendFor',
 		args: [
 			{
@@ -196,7 +181,7 @@ export async function sendFleetFor(
 	});
 
 	// Send the transaction
-	const hash = await walletClient.writeContract(request);
+	const hash = await clients.walletClient.writeContract(simulation.request);
 
 	// Compute fleet ID
 	const fleetId = computeFleetId(toHash, fromPlanetId, fleetSender, operator);

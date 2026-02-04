@@ -1,45 +1,29 @@
-import type {Address} from 'viem';
-import type {WalletClient} from 'viem';
 import type {PendingExit} from '../types/planet.js';
 import {getCurrentTimestamp} from '../util/time.js';
 import type {FleetStorage} from '../storage/interface.js';
+import {Clients, GameContract} from '../types.js';
 
 /**
  * Exit (unstake) multiple planets
  *
- * @param walletClient - Viem wallet client for signing transactions
- * @param contractAddress - The game contract address
- * @param contractAbi - The contract ABI
- * @param owner - The owner of the planets
- * @param planetIds - Array of planet location IDs to exit
- * @param exitDuration - The exit duration from contract config
- * @param storage - Storage instance for tracking pending exits
- * @returns Transaction hash and list of exits initiated
  */
 export async function exitPlanets(
-	walletClient: WalletClient,
-	contractAddress: Address,
-	contractAbi: readonly unknown[],
-	owner: Address,
+	clients: Clients,
+	gameContract: GameContract,
 	planetIds: bigint[],
 	exitDuration: bigint,
 	storage: FleetStorage,
 ): Promise<{hash: `0x${string}`; exitsInitiated: bigint[]}> {
-	const operator = walletClient.account!.address;
+	const sender = clients.walletClient.account!.address;
 	const currentTime = getCurrentTimestamp();
 
 	// Get planet states to verify ownership
-	const publicClient = walletClient as any;
-	const states = (await publicClient.readContract({
-		address: contractAddress,
-		abi: contractAbi,
+	const result = await clients.publicClient.readContract({
+		...gameContract,
 		functionName: 'getPlanetStates',
 		args: [planetIds],
-	})) as Array<{
-		owner: Address;
-		numSpaceships: number;
-		// ... other fields
-	}>;
+	});
+	const states = result[0];
 
 	// Create pending exit records for each planet
 	const exitsInitiated: bigint[] = [];
@@ -47,11 +31,11 @@ export async function exitPlanets(
 		const planetId = planetIds[i];
 		const state = states[i];
 
-		// Only create exit record for planets owned by the owner
-		if (state.owner && state.owner.toLowerCase() === owner.toLowerCase()) {
+		// Only create exit record for planets owned by the sender
+		if (state.owner && state.owner.toLowerCase() === sender.toLowerCase()) {
 			const exit: PendingExit = {
 				planetId,
-				player: owner,
+				player: sender,
 				exitStartTime: currentTime,
 				exitDuration: Number(exitDuration),
 				exitCompleteTime: currentTime + Number(exitDuration),
@@ -68,16 +52,15 @@ export async function exitPlanets(
 	}
 
 	// Get the contract exitMultipleFor function signature
-	const request = await publicClient.simulateContract({
-		address: contractAddress,
-		abi: contractAbi,
+	const simulation = await clients.publicClient.simulateContract({
+		...gameContract,
 		functionName: 'exitMultipleFor',
-		args: [owner, planetIds],
-		account: operator,
+		args: [sender, planetIds],
+		account: sender,
 	});
 
 	// Send the transaction
-	const hash = await walletClient.writeContract(request);
+	const hash = await clients.walletClient.writeContract(simulation.request);
 
 	return {hash, exitsInitiated};
 }

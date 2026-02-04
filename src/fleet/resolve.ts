@@ -1,9 +1,9 @@
-import type {Address} from 'viem';
-import type {WalletClient} from 'viem';
+import type {Address, WalletClient} from 'viem';
 import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
-import type {PendingFleet, FleetResolution} from '../types/fleet.js';
-import {getCurrentTimestamp} from '../util/time.js';
 import type {FleetStorage} from '../storage/interface.js';
+import {Clients, GameContract} from '../types.js';
+import type {FleetResolution, PendingFleet} from '../types/fleet.js';
+import {getCurrentTimestamp} from '../util/time.js';
 
 /**
  * Resolve (reveal) a fleet to complete its journey and trigger combat
@@ -85,21 +85,16 @@ export async function resolveFleet(
 /**
  * Resolve a fleet with custom SpaceInfo for distance calculation
  *
- * @param walletClient - Viem wallet client for signing transactions
- * @param fleetsRevealContract - The fleets reveal contract instance
+ * @param clients - Viem public and wallet client
+ * @param gameContract - game contract instance
  * @param spaceInfo - SpaceInfo instance for distance calculation
  * @param fleetId - The fleet ID to resolve
  * @param storage - Storage instance for tracking pending fleets
  * @returns The resolution result
  */
 export async function resolveFleetWithSpaceInfo(
-	walletClient: WalletClient,
-	fleetsRevealContract: {
-		address: Address;
-		abi: readonly unknown[];
-		publicClient: unknown;
-		walletClient: WalletClient | undefined;
-	},
+	clients: Clients,
+	gameContract: GameContract,
 	spaceInfo: SpaceInfo,
 	fleetId: string,
 	storage: FleetStorage,
@@ -116,7 +111,7 @@ export async function resolveFleetWithSpaceInfo(
 	}
 
 	// The operator must be the same as the wallet client account
-	const operator = walletClient.account!.address;
+	const operator = clients.walletClient.account!.address;
 	if (pendingFleet.operator !== operator) {
 		return {resolved: false, reason: `Only the operator can resolve this fleet`};
 	}
@@ -146,17 +141,16 @@ export async function resolveFleetWithSpaceInfo(
 	};
 
 	// Get the contract resolveFleet function signature
-	const publicClient = fleetsRevealContract.publicClient as any;
-	const request = await publicClient.simulateContract({
-		address: fleetsRevealContract.address as Address,
-		abi: fleetsRevealContract.abi,
+	const simulation = await clients.publicClient.simulateContract({
+		address: gameContract.address,
+		abi: gameContract.abi,
 		functionName: 'resolveFleet',
 		args: [BigInt('0x' + fleetId), resolution],
 		account: operator,
 	});
 
 	// Send the transaction
-	const hash = await walletClient.writeContract(request);
+	const hash = await clients.walletClient.writeContract(simulation.request);
 
 	// Mark fleet as resolved in storage
 	const resolvedAt = getCurrentTimestamp();

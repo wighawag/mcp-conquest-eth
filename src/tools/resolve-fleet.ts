@@ -7,13 +7,14 @@ import {FleetManager} from '../fleet/manager.js';
  */
 export async function handleResolveFleet(
 	args: unknown,
-	_extra: unknown,
-	fleetManager: FleetManager
+	fleetManager: FleetManager,
 ): Promise<CallToolResult> {
 	try {
-		const parsed = z.object({
-			fleetId: z.string(),
-		}).parse(args);
+		const parsed = z
+			.object({
+				fleetId: z.string(),
+			})
+			.parse(args);
 		const {fleetId} = parsed;
 
 		const result = await fleetManager.resolve(fleetId);
@@ -32,7 +33,7 @@ export async function handleResolveFleet(
 								quantity: result.fleet.quantity,
 							},
 							null,
-							2
+							2,
 						),
 					},
 				],
@@ -48,7 +49,7 @@ export async function handleResolveFleet(
 								reason: result.reason,
 							},
 							null,
-							2
+							2,
 						),
 					},
 				],
@@ -66,7 +67,7 @@ export async function handleResolveFleet(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],

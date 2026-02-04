@@ -7,18 +7,19 @@ import {PlanetManager} from '../planet/manager.js';
  */
 export async function handleExitPlanets(
 	args: unknown,
-	_extra: unknown,
-	planetManager: PlanetManager
+	planetManager: PlanetManager,
 ): Promise<CallToolResult> {
 	try {
-		const parsed = z.object({
-			planetIds: z.array(z.union([z.string(), z.number()])),
-		}).parse(args);
+		const parsed = z
+			.object({
+				planetIds: z.array(z.union([z.string(), z.number()])),
+			})
+			.parse(args);
 		const {planetIds} = parsed;
 
 		// Convert planet IDs to BigInt
 		const planetIdsBigInt = planetIds.map((id) =>
-			typeof id === 'string' ? BigInt(id) : BigInt(id)
+			typeof id === 'string' ? BigInt(id) : BigInt(id),
 		);
 
 		const result = await planetManager.exit(planetIdsBigInt);
@@ -34,7 +35,7 @@ export async function handleExitPlanets(
 							exitsInitiated: result.exitsInitiated.map((id) => id.toString()),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -50,7 +51,7 @@ export async function handleExitPlanets(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],

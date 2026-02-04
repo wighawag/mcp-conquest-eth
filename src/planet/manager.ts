@@ -7,9 +7,10 @@ import type {PendingExit} from '../types/planet.js';
 import {acquirePlanets} from './acquire.js';
 import {exitPlanets} from './exit.js';
 import type {FleetStorage} from '../storage/interface.js';
-import type {ContractConfig} from '../types.js';
+import type {Clients, ClientsWithOptionalWallet, ContractConfig, GameContract} from '../types.js';
 import {Abi_IOuterSpace} from '../../conquest-eth-v0-contracts/generated/abis/IOuterSpace.js';
 import {meta} from 'zod/v4/core';
+import {BigIntOptions} from 'node:fs';
 
 /**
  * PlanetManager manages planet-related operations in the Conquest game
@@ -17,19 +18,8 @@ import {meta} from 'zod/v4/core';
  */
 export class PlanetManager {
 	constructor(
-		private readonly walletClient: WalletClient | undefined,
-		private readonly stakingContract: {
-			address: Address;
-			abi: readonly unknown[];
-			publicClient: unknown;
-			walletClient: WalletClient | undefined;
-		},
-		private readonly infoContract: {
-			address: Address;
-			abi: Abi_IOuterSpace;
-			publicClient: PublicClient;
-			walletClient: WalletClient | undefined;
-		},
+		private readonly clients: ClientsWithOptionalWallet,
+		private readonly gameContract: GameContract,
 		private readonly spaceInfo: SpaceInfo,
 		private readonly contractConfig: ContractConfig,
 		private readonly storage: FleetStorage,
@@ -38,13 +28,13 @@ export class PlanetManager {
 	/**
 	 * Ensure walletClient is available for operations that require it
 	 */
-	private requireWalletClient(): WalletClient {
-		if (!this.walletClient) {
+	private requireWalletClient(): Clients {
+		if (!this.clients.walletClient) {
 			throw new Error(
 				'Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.',
 			);
 		}
-		return this.walletClient;
+		return this.clients as Clients;
 	}
 
 	/**
@@ -52,13 +42,12 @@ export class PlanetManager {
 	 */
 	async acquire(
 		planetIds: bigint[],
-		amountToMint: number,
-		tokenAmount: number,
+		amountToMint: bigint,
+		tokenAmount: bigint,
 	): Promise<{hash: `0x${string}`; planetsAcquired: bigint[]}> {
 		return acquirePlanets(
 			this.requireWalletClient(),
-			this.stakingContract.address as Address,
-			this.stakingContract.abi,
+			this.gameContract,
 			planetIds,
 			amountToMint,
 			tokenAmount,
@@ -68,16 +57,10 @@ export class PlanetManager {
 	/**
 	 * Exit (unstake) multiple planets
 	 */
-	async exit(
-		planetIds: bigint[],
-		owner?: Address,
-	): Promise<{hash: `0x${string}`; exitsInitiated: bigint[]}> {
-		const exitOwner = owner || this.requireWalletClient().account!.address;
+	async exit(planetIds: bigint[]): Promise<{hash: `0x${string}`; exitsInitiated: bigint[]}> {
 		return exitPlanets(
 			this.requireWalletClient(),
-			this.stakingContract.address as Address,
-			this.stakingContract.abi,
-			exitOwner,
+			this.gameContract,
 			planetIds,
 			this.contractConfig.exitDuration,
 			this.storage,
@@ -125,9 +108,9 @@ export class PlanetManager {
 
 		// Batch query contract for planet states
 		const planetIds = planetsInRect.map((p) => p.location.id);
-		const result = await this.infoContract.publicClient.readContract({
-			address: this.infoContract.address as Address,
-			abi: this.infoContract.abi,
+		const result = await this.clients.publicClient.readContract({
+			address: this.gameContract.address,
+			abi: this.gameContract.abi,
 			functionName: 'getPlanetStates',
 			args: [planetIds],
 		});
@@ -180,7 +163,7 @@ export class PlanetManager {
 	async getMyPlanets(
 		radius: number = 100,
 	): Promise<Array<{info: PlanetInfo; state: ExternalPlanet}>> {
-		const sender = this.requireWalletClient().account!.address;
+		const sender = this.requireWalletClient().walletClient.account!.address;
 
 		// For now, use a simple approach: get all planets in area and filter by owner
 		// A better approach would be to use an index or The Graph
@@ -193,12 +176,13 @@ export class PlanetManager {
 
 		// Batch query contract for planet states
 		const planetIds = planetsInRect.map((p) => p.location.id);
-		const states = (await (this.infoContract.publicClient as any).readContract({
-			address: this.infoContract.address as Address,
-			abi: this.infoContract.abi,
+		const result = await this.clients.publicClient.readContract({
+			address: this.gameContract.address,
+			abi: this.gameContract.abi,
 			functionName: 'getPlanetStates',
 			args: [planetIds],
-		})) as ExternalPlanet[];
+		});
+		const states = result[0];
 
 		// Get current time for computing latest state
 		const currentTime = Math.floor(Date.now() / 1000);
@@ -223,7 +207,7 @@ export class PlanetManager {
 	 * Get pending exits for the current player
 	 */
 	async getMyPendingExits(): Promise<PendingExit[]> {
-		const sender = this.requireWalletClient().account!.address;
+		const sender = this.requireWalletClient().walletClient.account!.address;
 		return this.storage.getPendingExitsByPlayer(sender as Address);
 	}
 
@@ -239,12 +223,12 @@ export class PlanetManager {
 		}
 
 		// Query contract for current planet state
-		const states = (await (this.infoContract.publicClient as any).readContract({
-			address: this.infoContract.address as Address,
-			abi: this.infoContract.abi,
+		const result = await this.clients.publicClient.readContract({
+			...this.gameContract,
 			functionName: 'getPlanetStates',
 			args: [[planetId]],
-		})) as ExternalPlanet[];
+		});
+		const states = result[0];
 
 		if (states.length === 0) {
 			throw new Error(`Could not get planet state for ${planetId}`);

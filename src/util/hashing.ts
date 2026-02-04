@@ -1,5 +1,5 @@
-import {keccak256, toBytes, encodeAbiParameters} from 'viem';
 import type {Address} from 'viem';
+import {encodeAbiParameters, keccak256} from 'viem';
 
 /**
  * Compute the toHash used in fleet commit phase

@@ -1,16 +1,13 @@
 import {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
-import type {PublicClient} from 'viem';
-import {Artifact_IOuterSpaceInformation} from '../../conquest-eth-v0-contracts/generated/artifacts/IOuterSpaceInformation.js';
-import type {ContractConfig} from '../types.js';
+import type {ClientsWithOptionalWallet, ContractConfig, GameContract} from '../types.js';
 
 export async function createSpaceInfo(
-	publicClient: PublicClient,
-	gameContract: `0x${string}`,
+	clients: ClientsWithOptionalWallet,
+	gameContract: GameContract,
 ): Promise<{spaceInfo: SpaceInfo; contractConfig: ContractConfig}> {
 	// Fetch config from contract
-	const config = await publicClient.readContract({
-		address: gameContract,
-		abi: Artifact_IOuterSpaceInformation.abi,
+	const config = await clients.publicClient.readContract({
+		...gameContract,
 		functionName: 'getConfig',
 	});
 

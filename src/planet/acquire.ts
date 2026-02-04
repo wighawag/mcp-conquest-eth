@@ -1,10 +1,13 @@
-import type {Address} from 'viem';
+import type {Address, PublicClient} from 'viem';
 import type {WalletClient} from 'viem';
+import {Abi_IOuterSpace} from '../../conquest-eth-v0-contracts/generated/abis/IOuterSpace.js';
+import {Clients, GameContract} from '../types.js';
 
 /**
  * Acquire (stake) multiple planets
  *
  * @param walletClient - Viem wallet client for signing transactions
+ * @param publicClient - Viem public client for querying the blockchain
  * @param contractAddress - The game contract address
  * @param contractAbi - The contract ABI
  * @param planetIds - Array of planet location IDs to acquire
@@ -13,20 +16,17 @@ import type {WalletClient} from 'viem';
  * @returns Transaction hash and list of planets acquired
  */
 export async function acquirePlanets(
-	walletClient: WalletClient,
-	contractAddress: Address,
-	contractAbi: readonly unknown[],
+	clients: Clients,
+	gameContract: GameContract,
 	planetIds: bigint[],
-	amountToMint: number,
-	tokenAmount: number,
+	amountToMint: bigint,
+	tokenAmount: bigint,
 ): Promise<{hash: `0x${string}`; planetsAcquired: bigint[]}> {
-	const sender = walletClient.account!.address;
+	const sender = clients.walletClient.account!.address;
 
 	// Get the contract acquireMultipleViaNativeTokenAndStakingToken function signature
-	const publicClient = walletClient as any;
-	const request = await publicClient.simulateContract({
-		address: contractAddress,
-		abi: contractAbi,
+	const simulation = await clients.publicClient.simulateContract({
+		...gameContract,
 		functionName: 'acquireMultipleViaNativeTokenAndStakingToken',
 		args: [planetIds, amountToMint, tokenAmount],
 		account: sender,
@@ -34,7 +34,7 @@ export async function acquirePlanets(
 	});
 
 	// Send the transaction
-	const hash = await walletClient.writeContract(request);
+	const hash = await clients.walletClient.writeContract(simulation.request);
 
 	return {hash, planetsAcquired: planetIds};
 }

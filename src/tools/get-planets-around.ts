@@ -7,22 +7,19 @@ import {PlanetManager} from '../planet/manager.js';
  */
 export async function handleGetPlanetsAround(
 	args: unknown,
-	_extra: unknown,
-	planetManager: PlanetManager
+	planetManager: PlanetManager,
 ): Promise<CallToolResult> {
 	try {
-		const parsed = z.object({
-			centerX: z.number(),
-			centerY: z.number(),
-			radius: z.number(),
-		}).parse(args);
+		const parsed = z
+			.object({
+				centerX: z.number(),
+				centerY: z.number(),
+				radius: z.number(),
+			})
+			.parse(args);
 		const {centerX, centerY, radius} = parsed;
 
-		const planets = await planetManager.getPlanetsAround(
-			centerX,
-			centerY,
-			radius
-		);
+		const planets = await planetManager.getPlanetsAround(centerX, centerY, radius);
 
 		return {
 			content: [
@@ -39,7 +36,7 @@ export async function handleGetPlanetsAround(
 							planets: planets.map(({info, state}) => ({
 								planetId: info.location.id.toString(),
 								distance: Math.sqrt(
-									Math.pow(info.location.x - centerX, 2) + Math.pow(info.location.y - centerY, 2)
+									Math.pow(info.location.x - centerX, 2) + Math.pow(info.location.y - centerY, 2),
 								),
 								owner: state?.owner || null,
 								location: {
@@ -50,7 +47,7 @@ export async function handleGetPlanetsAround(
 							})),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -66,7 +63,7 @@ export async function handleGetPlanetsAround(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],

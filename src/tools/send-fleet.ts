@@ -7,18 +7,19 @@ import {FleetManager} from '../fleet/manager.js';
  */
 export async function handleSendFleet(
 	args: unknown,
-	_extra: unknown,
-	fleetManager: FleetManager
+	fleetManager: FleetManager,
 ): Promise<CallToolResult> {
 	try {
-		const parsed = z.object({
-			fromPlanetId: z.union([z.string(), z.number()]),
-			toPlanetId: z.union([z.string(), z.number()]),
-			quantity: z.number(),
-			arrivalTimeWanted: z.number().optional(),
-			gift: z.boolean().optional(),
-			specific: z.string().optional(),
-		}).parse(args);
+		const parsed = z
+			.object({
+				fromPlanetId: z.union([z.string(), z.number()]),
+				toPlanetId: z.union([z.string(), z.number()]),
+				quantity: z.number(),
+				arrivalTimeWanted: z.number().optional(),
+				gift: z.boolean().optional(),
+				specific: z.string().optional(),
+			})
+			.parse(args);
 		const {fromPlanetId, toPlanetId, quantity, arrivalTimeWanted, gift, specific} = parsed;
 
 		const result = await fleetManager.send(
@@ -26,10 +27,11 @@ export async function handleSendFleet(
 			typeof toPlanetId === 'string' ? BigInt(toPlanetId) : BigInt(toPlanetId),
 			quantity,
 			{
-				arrivalTimeWanted: typeof arrivalTimeWanted === 'undefined' ? undefined : BigInt(arrivalTimeWanted),
+				arrivalTimeWanted:
+					typeof arrivalTimeWanted === 'undefined' ? undefined : BigInt(arrivalTimeWanted),
 				gift: gift ?? false,
 				specific: (specific as `0x${string}`) ?? '0x',
-			}
+			},
 		);
 
 		return {
@@ -47,7 +49,7 @@ export async function handleSendFleet(
 							secret: result.secret,
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -63,7 +65,7 @@ export async function handleSendFleet(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -86,13 +88,12 @@ export const sendFleetSchema = {
 	arrivalTimeWanted: z
 		.number()
 		.optional()
-		.describe('Desired arrival time (timestamp in seconds). If not specified, will be calculated based on distance.'),
+		.describe(
+			'Desired arrival time (timestamp in seconds). If not specified, will be calculated based on distance.',
+		),
 	gift: z
 		.boolean()
 		.optional()
 		.describe('Whether the fleet is a gift (sent without requiring arrival)'),
-	specific: z
-		.string()
-		.optional()
-		.describe('Additional specific data for the fleet'),
+	specific: z.string().optional().describe('Additional specific data for the fleet'),
 };

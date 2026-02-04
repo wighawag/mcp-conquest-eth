@@ -7,8 +7,7 @@ import {PlanetManager} from '../planet/manager.js';
  */
 export async function handleGetPendingExits(
 	_args: unknown,
-	_extra: unknown,
-	planetManager: PlanetManager
+	planetManager: PlanetManager,
 ): Promise<CallToolResult> {
 	try {
 		const exits = await planetManager.getMyPendingExits();
@@ -34,7 +33,7 @@ export async function handleGetPendingExits(
 							})),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],
@@ -50,7 +49,7 @@ export async function handleGetPendingExits(
 							error: error instanceof Error ? error.message : String(error),
 						},
 						null,
-						2
+						2,
 					),
 				},
 			],

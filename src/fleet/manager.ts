@@ -1,47 +1,34 @@
 import type {Address} from 'viem';
-import type {WalletClient} from 'viem';
 import type {SpaceInfo} from '../../conquest-eth-v0-contracts/js/index.js';
-import type {PendingFleet} from '../types/fleet.js';
-import {sendFleet, sendFleetFor} from './send.js';
-import {resolveFleetWithSpaceInfo, getResolvableFleets} from './resolve.js';
 import type {FleetStorage} from '../storage/interface.js';
-import type {ContractConfig} from '../types.js';
-
+import type {Clients, ClientsWithOptionalWallet, ContractConfig, GameContract} from '../types.js';
+import type {PendingFleet} from '../types/fleet.js';
+import {getResolvableFleets, resolveFleetWithSpaceInfo} from './resolve.js';
+import {sendFleet, sendFleetFor} from './send.js';
 /**
  * FleetManager manages the lifecycle of fleets in the Conquest game
  * including sending new fleets and resolving existing ones
  */
 export class FleetManager {
 	constructor(
-		private readonly walletClient: WalletClient | undefined,
-		private readonly fleetsCommitContract: {
-			address: Address;
-			abi: readonly unknown[];
-			publicClient: unknown;
-			walletClient: WalletClient | undefined;
-		},
-		private readonly fleetsRevealContract: {
-			address: Address;
-			abi: readonly unknown[];
-			publicClient: unknown;
-			walletClient: WalletClient | undefined;
-		},
+		private readonly clients: ClientsWithOptionalWallet,
+		private readonly gameContract: GameContract,
 		private readonly spaceInfo: SpaceInfo,
 		private readonly contractConfig: ContractConfig,
 		private readonly storage: FleetStorage,
-		private readonly contractAddress: Address,
+		// private readonly contractAddress: Address,
 	) {}
 
 	/**
 	 * Ensure walletClient is available for operations that require it
 	 */
-	private requireWalletClient(): WalletClient {
-		if (!this.walletClient) {
+	private requireWalletClient(): Clients {
+		if (!this.clients.walletClient) {
 			throw new Error(
 				'Wallet client is required for this operation. Please provide a PRIVATE_KEY environment variable.',
 			);
 		}
-		return this.walletClient;
+		return this.clients as Clients;
 	}
 
 	/**
@@ -60,8 +47,7 @@ export class FleetManager {
 	): Promise<PendingFleet> {
 		return sendFleet(
 			this.requireWalletClient(),
-			this.contractAddress,
-			this.fleetsCommitContract,
+			this.gameContract,
 			fromPlanetId,
 			toPlanetId,
 			quantity,
@@ -90,8 +76,7 @@ export class FleetManager {
 	): Promise<PendingFleet> {
 		return sendFleetFor(
 			this.requireWalletClient(),
-			this.contractAddress,
-			this.fleetsCommitContract,
+			this.gameContract,
 			fleetSender,
 			fleetOwner,
 			fromPlanetId,
@@ -112,7 +97,7 @@ export class FleetManager {
 	): Promise<{resolved: true; fleet: PendingFleet} | {resolved: false; reason: string}> {
 		return resolveFleetWithSpaceInfo(
 			this.requireWalletClient(),
-			this.fleetsRevealContract,
+			this.gameContract,
 			this.spaceInfo,
 			fleetId,
 			this.storage,
@@ -130,7 +115,7 @@ export class FleetManager {
 	 * Get all pending fleets for the current sender
 	 */
 	async getMyPendingFleets(): Promise<PendingFleet[]> {
-		const sender = this.requireWalletClient().account!.address;
+		const sender = this.requireWalletClient().walletClient.account!.address;
 		return this.storage.getPendingFleetsBySender(sender);
 	}
 
